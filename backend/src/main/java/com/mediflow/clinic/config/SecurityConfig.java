@@ -35,6 +35,7 @@ public class SecurityConfig {
 
 	private final String allowedOrigins;
 	private final boolean secureCookies;
+	private final String cookieSameSite;
 	private final AuthRateLimitFilter authRateLimitFilter;
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	private final RestAuthenticationEntryPoint authenticationEntryPoint;
@@ -44,6 +45,7 @@ public class SecurityConfig {
 	public SecurityConfig(
 		@Value("${app.security.allowed-origins}") String allowedOrigins,
 		@Value("${app.security.secure-cookies:false}") boolean secureCookies,
+		@Value("${app.security.cookie-same-site:Lax}") String cookieSameSite,
 		AuthRateLimitFilter authRateLimitFilter,
 		JwtAuthenticationFilter jwtAuthenticationFilter,
 		RestAuthenticationEntryPoint authenticationEntryPoint,
@@ -52,6 +54,7 @@ public class SecurityConfig {
 	) {
 		this.allowedOrigins = allowedOrigins;
 		this.secureCookies = secureCookies;
+		this.cookieSameSite = normalizeSameSite(cookieSameSite);
 		this.authRateLimitFilter = authRateLimitFilter;
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 		this.authenticationEntryPoint = authenticationEntryPoint;
@@ -64,7 +67,7 @@ public class SecurityConfig {
 		CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 		csrfRepository.setCookieCustomizer(cookie -> cookie
 			.path("/")
-			.sameSite("Lax")
+			.sameSite(cookieSameSite)
 			.secure(secureCookies));
 		CsrfTokenRequestAttributeHandler csrfRequestHandler = new CsrfTokenRequestAttributeHandler();
 		csrfRequestHandler.setCsrfRequestAttributeName(null);
@@ -141,5 +144,16 @@ public class SecurityConfig {
 			.map(String::trim)
 			.filter(origin -> !origin.isBlank())
 			.toList();
+	}
+
+	private String normalizeSameSite(String value) {
+		if (value != null) {
+			for (String allowed : List.of("Lax", "Strict", "None")) {
+				if (allowed.equalsIgnoreCase(value.trim())) {
+					return allowed;
+				}
+			}
+		}
+		throw new IllegalArgumentException("APP_COOKIE_SAME_SITE must be Lax, Strict, or None.");
 	}
 }

@@ -46,7 +46,7 @@ server:
       cookie:
         http-only: true
         secure: ${APP_SECURE_COOKIES:false}
-        same-site: lax
+        same-site: ${APP_COOKIE_SAME_SITE:lax}
   compression:
     enabled: true
     min-response-size: 1024
@@ -73,6 +73,7 @@ app:
   security:
     allowed-origins: ${APP_ALLOWED_ORIGINS:http://localhost:5173}
     secure-cookies: ${APP_SECURE_COOKIES:false}
+    cookie-same-site: ${APP_COOKIE_SAME_SITE:Lax}
     admin-google-email: ${APP_ADMIN_GOOGLE_EMAIL:panhaeourn7@gmail.com}
     jwt-secret-base64: ${APP_JWT_SECRET_BASE64:Y2hhbmdlLXRoaXMtand0LXNlY3JldC1pbi1lbnYtYmVmb3JlLXByb2R1Y3Rpb24tMjAyNg==}
     access-token-ttl-minutes: ${APP_ACCESS_TOKEN_TTL_MINUTES:30}
