@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mediflow.clinic.billing.dto.PaymentRefundRequest;
 import com.mediflow.clinic.billing.dto.PaymentResponse;
+import com.mediflow.clinic.billing.dto.PaymentSummaryResponse;
 import com.mediflow.clinic.billing.entity.PaymentMethod;
 import com.mediflow.clinic.billing.service.BillingService;
 
@@ -42,6 +43,17 @@ public class PaymentController {
 		@PageableDefault(size = 20, sort = "paidAt") Pageable pageable
 	) {
 		return billingService.findPayments(search, method, from, to, pageable);
+	}
+
+	@GetMapping("/summary")
+	@PreAuthorize("hasAuthority('PAYMENT_VIEW') and hasAnyRole('ADMIN', 'RECEPTIONIST_CASHIER')")
+	public PaymentSummaryResponse summary(
+		@RequestParam(required = false) String search,
+		@RequestParam(required = false) PaymentMethod method,
+		@RequestParam(required = false) Instant from,
+		@RequestParam(required = false) Instant to
+	) {
+		return billingService.summarizePayments(search, method, from, to);
 	}
 
 	@PostMapping("/{id}/refund")

@@ -7,7 +7,7 @@ import {
   Search,
   Settings,
 } from 'lucide-react'
-import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode, WheelEvent } from 'react'
+import type { FormEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode, WheelEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 
@@ -36,6 +36,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
   const [isDraggingNav, setIsDraggingNav] = useState(false)
+  const [workspaceSearch, setWorkspaceSearch] = useState('')
+  const [searchNotice, setSearchNotice] = useState('')
+  const [showNotifications, setShowNotifications] = useState(false)
   const { logout, user } = useAuth()
   const { brand } = useClinicBrand()
   const roles = user?.roles ?? []
@@ -45,6 +48,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   function handleLogout() {
     logout()
     navigate('/login', { replace: true })
+  }
+
+  function handleWorkspaceSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const query = workspaceSearch.trim().toLowerCase()
+    if (!query) return
+    const match = visibleItems.find((item) => item.label.toLowerCase().includes(query))
+    if (match) {
+      setSearchNotice('')
+      setWorkspaceSearch('')
+      navigate(match.path)
+      return
+    }
+    setSearchNotice('No page matches that search.')
   }
 
   function handleNavWheel(event: WheelEvent<HTMLElement>) {
@@ -278,14 +295,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <div className="topbar-actions">
-            <label className="search-control">
+            <form className="search-control" onSubmit={handleWorkspaceSearch} role="search">
               <Search size={16} aria-hidden="true" />
-              <input aria-label="Search clinic records" placeholder="Search..." type="search" />
-            </label>
-            <button className="icon-button" type="button" aria-label="Settings">
+              <input aria-label="Find a workspace" placeholder="Go to page..." type="search" value={workspaceSearch} onChange={(event) => { setWorkspaceSearch(event.target.value); setSearchNotice('') }} />
+            </form>
+            <button className="icon-button" onClick={() => navigate('/app/settings')} type="button" aria-label="Settings">
               <Settings size={17} aria-hidden="true" />
             </button>
-            <button className="icon-button" type="button" aria-label="Notifications">
+            <button aria-expanded={showNotifications} className="icon-button" onClick={() => setShowNotifications((current) => !current)} type="button" aria-label="Notifications">
               <Bell size={17} aria-hidden="true" />
             </button>
             <button className="avatar-button" onClick={handleLogout} type="button" title="Sign out">
@@ -293,6 +310,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <strong>{primaryRole}</strong>
               <LogOut size={15} aria-hidden="true" />
             </button>
+            {searchNotice ? <div className="topbar-popover" role="status">{searchNotice}</div> : null}
+            {showNotifications ? <div className="topbar-popover notification-popover" role="status"><strong>No new alerts</strong><span>You’re all caught up.</span></div> : null}
           </div>
         </header>
 

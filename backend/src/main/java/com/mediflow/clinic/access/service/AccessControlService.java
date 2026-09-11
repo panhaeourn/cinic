@@ -19,6 +19,7 @@ import com.mediflow.clinic.access.dto.PermissionResponse;
 import com.mediflow.clinic.access.dto.RoleResponse;
 import com.mediflow.clinic.access.dto.RoleUpdateRequest;
 import com.mediflow.clinic.access.dto.UserAccessResponse;
+import com.mediflow.clinic.auth.service.RefreshTokenService;
 import com.mediflow.clinic.audit.service.AuditService;
 import com.mediflow.clinic.common.exception.ApiException;
 import com.mediflow.clinic.user.entity.Permission;
@@ -35,6 +36,7 @@ public class AccessControlService {
 	private final RoleRepository roleRepository;
 	private final PermissionRepository permissionRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final RefreshTokenService refreshTokenService;
 	private final AuditService auditService;
 
 	public AccessControlService(
@@ -42,12 +44,14 @@ public class AccessControlService {
 		RoleRepository roleRepository,
 		PermissionRepository permissionRepository,
 		PasswordEncoder passwordEncoder,
+		RefreshTokenService refreshTokenService,
 		AuditService auditService
 	) {
 		this.userRepository = userRepository;
 		this.roleRepository = roleRepository;
 		this.permissionRepository = permissionRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.refreshTokenService = refreshTokenService;
 		this.auditService = auditService;
 	}
 
@@ -95,6 +99,7 @@ public class AccessControlService {
 		user.getRoles().clear();
 		user.getRoles().addAll(roles);
 		User saved = userRepository.save(user);
+		refreshTokenService.revokeAllActiveTokens(saved);
 		auditService.record("ACCESS_CONTROL", "ROLES_UPDATED", "User", userId.toString(), "Updated roles for " + saved.getEmail());
 		return toUserResponse(saved);
 	}
@@ -105,6 +110,9 @@ public class AccessControlService {
 		user.setEnabled(request.enabled());
 		user.setAccountNonLocked(request.accountNonLocked());
 		User saved = userRepository.save(user);
+		if (!saved.isEnabled() || !saved.isAccountNonLocked()) {
+			refreshTokenService.revokeAllActiveTokens(saved);
+		}
 		auditService.record("ACCESS_CONTROL", "ACCOUNT_STATUS_UPDATED", "User", userId.toString(), "Updated account status for " + saved.getEmail());
 		return toUserResponse(saved);
 	}
@@ -115,6 +123,7 @@ public class AccessControlService {
 		user.setPasswordHash(passwordEncoder.encode(request.temporaryPassword()));
 		user.setCredentialsNonExpired(true);
 		User saved = userRepository.save(user);
+		refreshTokenService.revokeAllActiveTokens(saved);
 		auditService.record("ACCESS_CONTROL", "PASSWORD_RESET", "User", userId.toString(), "Reset password for " + saved.getEmail());
 		return toUserResponse(saved);
 	}

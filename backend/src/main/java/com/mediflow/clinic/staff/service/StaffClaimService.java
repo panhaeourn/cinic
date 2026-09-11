@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mediflow.clinic.auth.dto.AuthResponse;
+import com.mediflow.clinic.auth.dto.UserResponse;
 import com.mediflow.clinic.auth.service.AuthService;
 import com.mediflow.clinic.common.exception.ApiException;
 import com.mediflow.clinic.staff.dto.StaffClaimResponse;
@@ -100,7 +100,7 @@ public class StaffClaimService {
 	}
 
 	@Transactional
-	public AuthResponse claim(String code, String signedInEmail) {
+	public UserResponse claim(String code, String signedInEmail) {
 		User user = userRepository.findByEmailIgnoreCase(normalizeEmail(signedInEmail))
 			.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Signed-in user was not found."));
 		StaffClaimToken token = staffClaimTokenRepository.findByClaimCodeIgnoreCase(code.trim())
@@ -136,7 +136,7 @@ public class StaffClaimService {
 		userRepository.save(user);
 		staffClaimTokenRepository.save(token);
 
-		return authService.issueTokens(user);
+		return authService.toUserResponse(user);
 	}
 
 	private User resolveOptionalUser(String email) {

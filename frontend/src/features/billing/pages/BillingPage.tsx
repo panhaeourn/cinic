@@ -630,7 +630,7 @@ export function BillingPage() {
             <WalletCards size={17} aria-hidden="true" />
           </span>
           <strong>Receive payment</strong>
-          <small>Record cash, Bakong KHQR, card, bank, or mobile payments.</small>
+          <small>Record cash, Bakong KHQR, ACLEDA, card, bank, or mobile payments.</small>
         </article>
         <article>
           <span className="command-icon">
@@ -954,6 +954,7 @@ export function BillingPage() {
               >
                 <option value="CASH">Cash</option>
                 <option value="BAKONG_KHQR">Bakong KHQR</option>
+                <option value="ACLEDA">ACLEDA</option>
                 <option value="CARD">Card</option>
                 <option value="BANK_TRANSFER">Bank transfer</option>
                 <option value="MOBILE_PAYMENT">Mobile payment</option>

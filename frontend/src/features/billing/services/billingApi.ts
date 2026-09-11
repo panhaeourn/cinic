@@ -11,6 +11,7 @@ import type {
   PaymentMethod,
   PaymentPayload,
   PaymentRefundPayload,
+  PaymentSummary,
   Receipt,
   ServicePrice,
   ServicePricePayload,
@@ -29,6 +30,21 @@ function cleanInvoicePayload(payload: InvoicePayload) {
     ...cleanObject(payload),
     items: payload.items.map((item) => cleanObject(item)),
   }
+}
+
+function formatTimezoneOffset(date: Date) {
+  const minutes = -date.getTimezoneOffset()
+  const sign = minutes >= 0 ? '+' : '-'
+  const absoluteMinutes = Math.abs(minutes)
+  const hours = String(Math.floor(absoluteMinutes / 60)).padStart(2, '0')
+  const remainder = String(absoluteMinutes % 60).padStart(2, '0')
+  return `${sign}${hours}:${remainder}`
+}
+
+function formatLocalBoundary(dateValue: string, endOfDay = false) {
+  const time = endOfDay ? '23:59:59.999' : '00:00:00.000'
+  const localDate = new Date(`${dateValue}T12:00:00`)
+  return `${dateValue}T${time}${formatTimezoneOffset(localDate)}`
 }
 
 export const billingApi = {
@@ -78,12 +94,28 @@ export const billingApi = {
       query.set('method', method)
     }
     if (from) {
-      query.set('from', new Date(`${from}T00:00:00`).toISOString())
+      query.set('from', formatLocalBoundary(from))
     }
     if (to) {
-      query.set('to', new Date(`${to}T23:59:59`).toISOString())
+      query.set('to', formatLocalBoundary(to, true))
     }
     return apiRequest<PageResponse<Payment>>(`/payments?${query.toString()}`)
+  },
+  paymentSummary(search: string, method: PaymentMethod | '', from?: string, to?: string) {
+    const query = new URLSearchParams()
+    if (search.trim()) {
+      query.set('search', search.trim())
+    }
+    if (method) {
+      query.set('method', method)
+    }
+    if (from) {
+      query.set('from', formatLocalBoundary(from))
+    }
+    if (to) {
+      query.set('to', formatLocalBoundary(to, true))
+    }
+    return apiRequest<PaymentSummary>(`/payments/summary?${query.toString()}`)
   },
   refundPayment(id: string, payload: PaymentRefundPayload) {
     return apiRequest<Payment>(`/payments/${id}/refund`, {

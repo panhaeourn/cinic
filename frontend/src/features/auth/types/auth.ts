@@ -8,11 +8,7 @@ export type User = {
 }
 
 export type AuthResponse = {
-  accessToken: string
-  refreshToken: string
-  tokenType: 'Bearer'
-  expiresInSeconds: number
-  user: User
+	user: User
 }
 
 export type LoginPayload = {

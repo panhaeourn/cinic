@@ -2,7 +2,7 @@ export type InvoiceStatus = 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'CANCELLED'
 
 export type InvoiceItemType = 'CONSULTATION' | 'MEDICINE' | 'SERVICE' | 'OTHER'
 
-export type PaymentMethod = 'CASH' | 'BAKONG_KHQR' | 'CARD' | 'BANK_TRANSFER' | 'MOBILE_PAYMENT'
+export type PaymentMethod = 'CASH' | 'BAKONG_KHQR' | 'ACLEDA' | 'CARD' | 'BANK_TRANSFER' | 'MOBILE_PAYMENT'
 
 export type InvoiceItem = {
   id: string
@@ -34,6 +34,13 @@ export type Payment = {
   refundedAt: string | null
   paidAt: string
   createdAt: string
+}
+
+export type PaymentSummary = {
+  grossAmount: number
+  refundedAmount: number
+  netAmount: number
+  paymentCount: number
 }
 
 export type Invoice = {

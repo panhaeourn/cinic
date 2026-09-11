@@ -6,4 +6,6 @@ frontend/dist/
 
 backend/target/
 
+tmp/
+
 *.log

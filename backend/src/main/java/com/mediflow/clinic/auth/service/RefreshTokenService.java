@@ -59,4 +59,12 @@ public class RefreshTokenService {
 		refreshToken.setRevokedAt(Instant.now());
 		return refreshToken.getUser();
 	}
+
+	@Transactional
+	public void revokeAllActiveTokens(User user) {
+		if (user == null || user.getId() == null) {
+			return;
+		}
+		refreshTokenRepository.revokeAllActiveByUserId(user.getId(), Instant.now());
+	}
 }

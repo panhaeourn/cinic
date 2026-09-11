@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mediflow.clinic.patient.dto.PatientCreateRequest;
 import com.mediflow.clinic.patient.dto.PatientResponse;
 import com.mediflow.clinic.patient.dto.PatientUpdateRequest;
+import com.mediflow.clinic.patient.dto.PatientListItemResponse;
 import com.mediflow.clinic.patient.service.PatientService;
+import com.mediflow.clinic.common.response.CursorPageResponse;
 
 @RestController
 @RequestMapping("/api/patients")
@@ -48,6 +50,16 @@ public class PatientController {
 		@PageableDefault(size = 20, sort = "createdAt") Pageable pageable
 	) {
 		return patientService.findAll(search, pageable);
+	}
+
+	@GetMapping("/cursor")
+	@PreAuthorize("hasAuthority('PATIENT_VIEW') and hasAnyRole('ADMIN', 'DOCTOR', 'RECEPTIONIST_CASHIER', 'NURSE')")
+	public CursorPageResponse<PatientListItemResponse> findCursor(
+		@RequestParam(required = false) String search,
+		@RequestParam(required = false) String cursor,
+		@RequestParam(defaultValue = "50") int size
+	) {
+		return patientService.findCursor(search, cursor, size);
 	}
 
 	@GetMapping("/{id}")

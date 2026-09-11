@@ -35,6 +35,7 @@ const emptySettings: ClinicSettingsPayload = {
 
 function toPayload(settings: ClinicSettings): ClinicSettingsPayload {
   const { updatedAt: _updatedAt, ...payload } = settings
+  void _updatedAt
   return payload
 }
 

@@ -65,7 +65,7 @@ public class AuthService {
 	}
 
 	@Transactional
-	public AuthResponse register(RegisterRequest request) {
+	public UserResponse register(RegisterRequest request) {
 		String email = normalizeEmail(request.email());
 		if (userRepository.existsByEmailIgnoreCase(email)) {
 			throw new ApiException(HttpStatus.CONFLICT, "Email is already registered.");
@@ -82,11 +82,11 @@ public class AuthService {
 		user.getRoles().add(patientRole);
 
 		User saved = userRepository.save(user);
-		return issueTokens(saved);
+		return toUserResponse(saved);
 	}
 
 	@Transactional
-	public AuthResponse login(LoginRequest request) {
+	public UserResponse login(LoginRequest request) {
 		String email = normalizeEmail(request.email());
 		if (email.equals(adminGoogleEmail)) {
 			throw new ApiException(HttpStatus.UNAUTHORIZED, "Admin account must sign in with Google.");
@@ -100,7 +100,8 @@ public class AuthService {
 		User user = userRepository.findByEmailIgnoreCase(email)
 			.orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Invalid email or password."));
 
-		return issueTokens(user);
+		ensureTokenIssuable(user);
+		return toUserResponse(user);
 	}
 
 	@Transactional
@@ -110,9 +111,10 @@ public class AuthService {
 	}
 
 	@Transactional
-	public AuthResponse exchangeOAuthCode(OAuthExchangeRequest request) {
+	public UserResponse exchangeOAuthCode(OAuthExchangeRequest request) {
 		User user = oauthLoginCodeService.consume(request.code());
-		return issueTokens(user);
+		ensureTokenIssuable(user);
+		return toUserResponse(user);
 	}
 
 	@Transactional
@@ -130,6 +132,7 @@ public class AuthService {
 	}
 
 	public AuthResponse issueTokens(User user) {
+		ensureTokenIssuable(user);
 		Set<String> roles = roleNames(user);
 		Set<String> permissions = permissionCodes(user);
 		String accessToken = jwtService.generateAccessToken(
@@ -148,7 +151,22 @@ public class AuthService {
 		);
 	}
 
-	private UserResponse toUserResponse(User user) {
+	private void ensureTokenIssuable(User user) {
+		if (!user.isEnabled()) {
+			throw new ApiException(HttpStatus.FORBIDDEN, "This account is disabled.");
+		}
+		if (!user.isAccountNonLocked()) {
+			throw new ApiException(HttpStatus.FORBIDDEN, "This account is locked.");
+		}
+		if (!user.isAccountNonExpired()) {
+			throw new ApiException(HttpStatus.FORBIDDEN, "This account is expired.");
+		}
+		if (!user.isCredentialsNonExpired()) {
+			throw new ApiException(HttpStatus.FORBIDDEN, "This account credentials are expired.");
+		}
+	}
+
+	public UserResponse toUserResponse(User user) {
 		return new UserResponse(
 			user.getId(),
 			user.getEmail(),

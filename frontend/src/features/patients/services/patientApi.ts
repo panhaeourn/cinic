@@ -1,5 +1,5 @@
 import { apiRequest } from '../../../shared/api/apiClient'
-import type { PageResponse, Patient, PatientPayload } from '../types/patient'
+import type { CursorPage, PageResponse, Patient, PatientListItem, PatientPayload } from '../types/patient'
 
 function cleanPayload(payload: PatientPayload) {
   return Object.fromEntries(
@@ -14,6 +14,16 @@ export const patientApi = {
       query.set('search', search.trim())
     }
     return apiRequest<PageResponse<Patient>>(`/patients?${query.toString()}`)
+  },
+  listCursor(search: string, cursor: string | null, signal?: AbortSignal) {
+    const query = new URLSearchParams({ size: '50' })
+    if (search.trim()) {
+      query.set('search', search.trim())
+    }
+    if (cursor) {
+      query.set('cursor', cursor)
+    }
+    return apiRequest<CursorPage<PatientListItem>>(`/patients/cursor?${query.toString()}`, { signal })
   },
   get(id: string) {
     return apiRequest<Patient>(`/patients/${id}`)

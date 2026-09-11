@@ -58,6 +58,18 @@ export function AccessControlPage() {
     }
   }, [search])
 
+  useEffect(() => {
+    if (isLoading || users.length === 0) {
+      return
+    }
+    if (!selectedUser || !users.some((user) => user.id === selectedUser.id)) {
+      const firstUser = users[0]
+      setSelectedUser(firstUser)
+      setSelectedRoles(firstUser.roles)
+      setTemporaryPassword('')
+    }
+  }, [isLoading, selectedUser, users])
+
   function selectUser(user: UserAccess) {
     setSelectedUser(user)
     setSelectedRoles(user.roles)
@@ -242,10 +254,15 @@ export function AccessControlPage() {
           </div>
           <div className="permission-list">
             {roles.map((role) => (
-              <div key={role.id}>
-                <strong>{role.name}</strong>
-                <span>{role.permissions.map((permission) => permission.code).join(', ')}</span>
-              </div>
+              <details key={role.id}>
+                <summary>
+                  <strong>{role.name}</strong>
+                  <span>{role.permissions.length} permissions</span>
+                </summary>
+                <div className="permission-code-grid">
+                  {role.permissions.map((permission) => <code key={permission.id}>{permission.code}</code>)}
+                </div>
+              </details>
             ))}
           </div>
         </section>

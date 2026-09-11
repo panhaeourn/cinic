@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   Activity,
   CalendarPlus,
@@ -15,7 +17,7 @@ import {
 import { useAuth } from '../../auth/components/AuthContext'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { patientApi } from '../services/patientApi'
-import type { Gender, Patient, PatientPayload } from '../types/patient'
+import type { Gender, Patient, PatientListItem, PatientPayload } from '../types/patient'
 
 const emptyForm: PatientPayload = {
   firstName: '',
@@ -62,73 +64,91 @@ function getAge(dateOfBirth: string) {
 
 export function PatientsPage() {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [form, setForm] = useState<PatientPayload>(emptyForm)
-  const [patients, setPatients] = useState<Patient[]>([])
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
-  const [totalElements, setTotalElements] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
-  const canCreate = useMemo(() => user?.permissions.includes('PATIENT_CREATE') ?? false, [user])
-  const isEditing = Boolean(selectedPatient && canCreate)
-  const selectedAge = selectedPatient ? getAge(selectedPatient.dateOfBirth) : null
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setDebouncedSearch(search.trim()), 250)
+    return () => window.clearTimeout(timeout)
+  }, [search])
+
+  const patientList = useInfiniteQuery({
+    queryKey: ['patients', 'cursor', debouncedSearch],
+    queryFn: ({ pageParam, signal }) => patientApi.listCursor(debouncedSearch, pageParam, signal),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  })
+  const patients = useMemo(
+    () => patientList.data?.pages.flatMap((page) => page.items) ?? [],
+    [patientList.data],
+  )
+  const patientDetail = useQuery({
+    queryKey: ['patients', 'detail', selectedPatientId],
+    queryFn: () => patientApi.get(selectedPatientId!),
+    enabled: Boolean(selectedPatientId),
+  })
+  const selectedPatient = patientDetail.data ?? null
+  const queryError = patientList.error ?? patientDetail.error
+  const listRef = useRef<HTMLDivElement>(null)
+  const rowVirtualizer = useVirtualizer({
+    count: patients.length,
+    getScrollElement: () => listRef.current,
+    estimateSize: () => 72,
+    overscan: 8,
+  })
+  const virtualRows = rowVirtualizer.getVirtualItems()
 
   useEffect(() => {
-    let ignore = false
-    setIsLoading(true)
-    setError(null)
-    patientApi
-      .list(search)
-      .then((page) => {
-        if (!ignore) {
-          setPatients(page.content)
-          setTotalElements(page.totalElements)
-        }
-      })
-      .catch((caught: Error) => {
-        if (!ignore) {
-          setError(caught.message)
-        }
-      })
-      .finally(() => {
-        if (!ignore) {
-          setIsLoading(false)
-        }
-      })
-
-    return () => {
-      ignore = true
+    const lastRow = virtualRows.at(-1)
+    if (
+      lastRow
+      && lastRow.index >= patients.length - 8
+      && patientList.hasNextPage
+      && !patientList.isFetchingNextPage
+    ) {
+      void patientList.fetchNextPage()
     }
-  }, [search])
+  }, [patientList, patients.length, virtualRows])
+
+  useEffect(() => {
+    if (selectedPatient) {
+      setForm(toPatientForm(selectedPatient))
+    }
+  }, [selectedPatient])
+
+  const canCreate = useMemo(() => user?.permissions.includes('PATIENT_CREATE') ?? false, [user])
+  const isEditing = Boolean(selectedPatientId && canCreate)
+  const selectedAge = selectedPatient ? getAge(selectedPatient.dateOfBirth) : null
 
   function updateField(field: keyof PatientPayload, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
   }
 
   function startNewPatient() {
-    setSelectedPatient(null)
+    setSelectedPatientId(null)
     setForm(emptyForm)
     setError(null)
     setNotice(null)
   }
 
-  function selectPatient(patient: Patient) {
-    setSelectedPatient(patient)
-    setForm(toPatientForm(patient))
+  function selectPatient(patient: PatientListItem) {
+    setSelectedPatientId(patient.id)
     setError(null)
     setNotice(null)
   }
 
   async function refreshPatients(nextSelected?: Patient) {
-    const page = await patientApi.list(search)
-    setPatients(page.content)
-    setTotalElements(page.totalElements)
-    if (nextSelected) {
-      setSelectedPatient(nextSelected)
-    }
+	await queryClient.invalidateQueries({ queryKey: ['patients', 'cursor'] })
+	if (nextSelected) {
+	  queryClient.setQueryData(['patients', 'detail', nextSelected.id], nextSelected)
+	  setSelectedPatientId(nextSelected.id)
+	}
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -138,8 +158,8 @@ export function PatientsPage() {
     setIsSaving(true)
 
     try {
-      if (selectedPatient && canCreate) {
-        const updatedPatient = await patientApi.update(selectedPatient.id, form)
+      if (selectedPatientId && canCreate) {
+		const updatedPatient = await patientApi.update(selectedPatientId, form)
         setForm(toPatientForm(updatedPatient))
         setNotice(`Patient ${updatedPatient.patientCode} was updated.`)
         await refreshPatients(updatedPatient)
@@ -200,7 +220,9 @@ export function PatientsPage() {
         </article>
       </div>
 
-      {error ? <div className="form-alert">{error}</div> : null}
+      {error || queryError ? (
+        <div className="form-alert">{error ?? (queryError instanceof Error ? queryError.message : 'Unable to load patients.')}</div>
+      ) : null}
       {notice ? <div className="success-alert">{notice}</div> : null}
 
       <div className="patient-workspace">
@@ -208,7 +230,7 @@ export function PatientsPage() {
           <div className="panel-heading">
             <div>
               <span className="eyebrow">Patient registry</span>
-              <h2>{totalElements} records</h2>
+              <h2>{patients.length}{patientList.hasNextPage ? '+' : ''} loaded records</h2>
             </div>
             <UsersRound size={20} aria-hidden="true" />
           </div>
@@ -230,28 +252,37 @@ export function PatientsPage() {
               <span>Phone</span>
               <span>Blood</span>
             </div>
-            {isLoading ? (
+            {patientList.isPending ? (
               <div className="patient-empty">Loading patient records...</div>
             ) : patients.length === 0 ? (
               <div className="patient-empty">No patients found.</div>
             ) : (
-              patients.map((patient) => (
-                <button
-                  className={selectedPatient?.id === patient.id ? 'patient-table-row active' : 'patient-table-row'}
-                  key={patient.id}
-                  onClick={() => selectPatient(patient)}
-                  type="button"
-                >
-                  <strong>{patient.patientCode}</strong>
-                  <span>
-                    {patient.fullName}
-                    <small>{patient.email ?? 'No email'}</small>
-                  </span>
-                  <span>{patient.gender}</span>
-                  <span>{patient.phone}</span>
-                  <span>{patient.bloodType ?? '-'}</span>
-                </button>
-              ))
+              <div className="patient-table-scroll" ref={listRef}>
+                <div className="patient-virtual-space" style={{ height: rowVirtualizer.getTotalSize() }}>
+                  {virtualRows.map((virtualRow) => {
+                    const patient = patients[virtualRow.index]
+                    return (
+                      <button
+                        className={selectedPatientId === patient.id ? 'patient-table-row active' : 'patient-table-row'}
+                        key={patient.id}
+                        onClick={() => selectPatient(patient)}
+                        style={{ transform: `translateY(${virtualRow.start}px)` }}
+                        type="button"
+                      >
+                        <strong>{patient.patientCode}</strong>
+                        <span>
+                          {patient.fullName}
+                          <small>{patient.email ?? 'No email'}</small>
+                        </span>
+                        <span>{patient.gender}</span>
+                        <span>{patient.phone}</span>
+                        <span>{patient.bloodType ?? '-'}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                {patientList.isFetchingNextPage ? <div className="patient-load-more">Loading more…</div> : null}
+              </div>
             )}
           </div>
         </section>

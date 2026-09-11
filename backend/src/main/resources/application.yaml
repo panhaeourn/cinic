@@ -6,8 +6,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:18643762220-2phmabrftce8bhhbdrrq7i2dcmj4e30e.apps.googleusercontent.com}
-            client-secret: ${GOOGLE_CLIENT_SECRET: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}
+            client-id: ${GOOGLE_CLIENT_ID:set-google-client-id-in-env}
+            client-secret: ${GOOGLE_CLIENT_SECRET:set-google-client-secret-in-env}
             scope:
               - profile
               - email
@@ -15,7 +15,13 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/clinic_app}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:123456789}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_IDLE:4}
+      connection-timeout: ${DB_POOL_CONNECTION_TIMEOUT_MS:2000}
+      idle-timeout: ${DB_POOL_IDLE_TIMEOUT_MS:300000}
+      max-lifetime: ${DB_POOL_MAX_LIFETIME_MS:1800000}
   jpa:
     open-in-view: false
     hibernate:
@@ -24,6 +30,8 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+          fetch_size: 100
+        default_batch_fetch_size: 50
         format_sql: true
   flyway:
     enabled: true
@@ -31,32 +39,59 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      timeout: ${APP_SESSION_TIMEOUT:8h}
+      cookie:
+        http-only: true
+        secure: ${APP_SECURE_COOKIES:false}
+        same-site: lax
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types: application/json,text/html,text/plain,text/css,application/javascript
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
 
 app:
   frontend-url: ${APP_FRONTEND_URL:http://localhost:5173}
   security:
     allowed-origins: ${APP_ALLOWED_ORIGINS:http://localhost:5173}
+    secure-cookies: ${APP_SECURE_COOKIES:false}
     admin-google-email: ${APP_ADMIN_GOOGLE_EMAIL:panhaeourn7@gmail.com}
-    jwt-secret-base64: ${APP_JWT_SECRET_BASE64:0Dq9uXCWUXXYCxht1xhJ7CA6pPjstKGS/ZwtgGJLD2s=}
+    jwt-secret-base64: ${APP_JWT_SECRET_BASE64:Y2hhbmdlLXRoaXMtand0LXNlY3JldC1pbi1lbnYtYmVmb3JlLXByb2R1Y3Rpb24tMjAyNg==}
     access-token-ttl-minutes: ${APP_ACCESS_TOKEN_TTL_MINUTES:30}
     refresh-token-ttl-days: ${APP_REFRESH_TOKEN_TTL_DAYS:7}
+    auth-rate-limit:
+      max-attempts: ${APP_AUTH_RATE_LIMIT_MAX_ATTEMPTS:8}
+      window-seconds: ${APP_AUTH_RATE_LIMIT_WINDOW_SECONDS:300}
+      max-tracked-clients: ${APP_AUTH_RATE_LIMIT_MAX_TRACKED_CLIENTS:10000}
 
 bakong:
-  token: ${BAKONG_TOKEN:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiYWM0NDlhODIxYWFlNDMzNiJ9LCJpYXQiOjE3Nzk4OTI0NDksImV4cCI6MTc4NzY2ODQ0OX0.uqHtcOdeMy9JPCJB4ihtnCC_TMdVisLA8mlr33oGKy4}
+  token: ${BAKONG_TOKEN:}
   api-key: ${BAKONG_API_KEY:}
   base-url: ${BAKONG_BASE_URL:https://api-bakong.nbc.gov.kh}
   alternative-base-urls: ${BAKONG_ALTERNATIVE_BASE_URLS:}
   currency: ${BAKONG_CURRENCY:USD}
   qr-expiry-seconds: ${BAKONG_QR_EXPIRY_SECONDS:200}
   merchant:
-    bakong-account-id: ${BAKONG_MERCHANT_BAKONG_ACCOUNT_ID:vira_eourn@bkrt}
-    account-information: ${BAKONG_MERCHANT_ACCOUNT_INFORMATION:0714086207}
+    bakong-account-id: ${BAKONG_MERCHANT_BAKONG_ACCOUNT_ID:}
+    account-information: ${BAKONG_MERCHANT_ACCOUNT_INFORMATION:}
     acquiring-bank: ${BAKONG_MERCHANT_ACQUIRING_BANK:Bakong}
-    name: ${BAKONG_MERCHANT_NAME:Vira Eourn}
+    name: ${BAKONG_MERCHANT_NAME:MediFlex Clinic}
     city: ${BAKONG_MERCHANT_CITY:Phnom Penh}

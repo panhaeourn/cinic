@@ -9,13 +9,17 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mediflow.clinic.common.exception.ApiErrorResponse;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper;
+
+	public RestAuthenticationEntryPoint(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
 
 	@Override
 	public void commence(

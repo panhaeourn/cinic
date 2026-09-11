@@ -1,9 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo } from 'react'
 import type { ReactNode } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { AuthResponse, LoginPayload, RegisterPayload, User } from '../types/auth'
 import { authApi } from '../services/authApi'
-import { tokenStorage } from '../services/tokenStorage'
+
+const sessionQueryKey = ['auth', 'session'] as const
 
 type AuthContextValue = {
   user: User | null
@@ -13,33 +15,25 @@ type AuthContextValue = {
   register: (payload: RegisterPayload) => Promise<AuthResponse>
   completeGoogleLogin: (code: string) => Promise<AuthResponse>
   claimStaffCode: (code: string) => Promise<AuthResponse>
-  logout: () => void
+	logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    if (!tokenStorage.getAccessToken()) {
-      setIsLoading(false)
-      return
-    }
-
-    authApi
-      .me()
-      .then(setUser)
-      .catch(() => tokenStorage.clear())
-      .finally(() => setIsLoading(false))
-  }, [])
+	const queryClient = useQueryClient()
+	const session = useQuery({
+		queryKey: sessionQueryKey,
+		queryFn: authApi.me,
+		retry: false,
+		staleTime: 5 * 60_000,
+	})
+	const user = session.data ?? null
 
   const persistSession = useCallback((response: AuthResponse) => {
-    tokenStorage.save(response.accessToken, response.refreshToken)
-    setUser(response.user)
-    return response
-  }, [])
+		queryClient.setQueryData(sessionQueryKey, response.user)
+		return response
+	}, [queryClient])
 
   const login = useCallback(
     (payload: LoginPayload) => authApi.login(payload).then(persistSession),
@@ -61,23 +55,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [persistSession],
   )
 
-  const logout = useCallback(() => {
-    tokenStorage.clear()
-    setUser(null)
-  }, [])
+	const logout = useCallback(async () => {
+		try {
+			await authApi.logout()
+		} finally {
+			queryClient.setQueryData(sessionQueryKey, null)
+			queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== 'auth' })
+		}
+	}, [queryClient])
 
   const value = useMemo(
     () => ({
       user,
       isAuthenticated: Boolean(user),
-      isLoading,
+		isLoading: session.isPending,
       login,
       register,
       completeGoogleLogin,
       claimStaffCode,
       logout,
     }),
-    [claimStaffCode, completeGoogleLogin, isLoading, login, logout, register, user],
+		[claimStaffCode, completeGoogleLogin, login, logout, register, session.isPending, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

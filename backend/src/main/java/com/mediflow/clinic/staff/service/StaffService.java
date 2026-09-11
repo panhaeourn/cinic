@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mediflow.clinic.common.code.CodeGeneratorService;
 import com.mediflow.clinic.common.exception.ApiException;
 import com.mediflow.clinic.department.entity.Department;
+import com.mediflow.clinic.department.entity.DepartmentStatus;
 import com.mediflow.clinic.department.repository.DepartmentRepository;
 import com.mediflow.clinic.staff.dto.StaffCreateRequest;
 import com.mediflow.clinic.staff.dto.StaffResponse;
@@ -137,7 +138,8 @@ public class StaffService {
 			return null;
 		}
 		return departmentRepository.findById(departmentId)
-			.orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Department was not found."));
+			.filter(department -> department.getStatus() == DepartmentStatus.ACTIVE)
+			.orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "An active department was not found."));
 	}
 
 	private Role resolveRole(String roleName) {

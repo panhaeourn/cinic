@@ -20,9 +20,12 @@ export const authApi = {
       body: JSON.stringify({ code }),
     })
   },
-  me() {
-    return apiRequest<User>('/auth/me')
-  },
+	me() {
+		return apiRequest<User>('/auth/me')
+	},
+	logout() {
+		return apiRequest<void>('/auth/logout', { method: 'POST' })
+	},
   claimStaffCode(code: string) {
     return apiRequest<AuthResponse>('/staff-claims/claim', {
       method: 'POST',

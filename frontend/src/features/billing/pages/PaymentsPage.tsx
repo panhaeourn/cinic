@@ -15,7 +15,7 @@ import { formatCurrencyAmount } from '../../../shared/clinic/currency'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { billingApi } from '../services/billingApi'
 import { downloadReceipt, printReceipt } from '../services/receiptTools'
-import type { Payment, PaymentMethod } from '../types/billing'
+import type { Payment, PaymentMethod, PaymentSummary } from '../types/billing'
 
 function shortDate(value: string) {
   return new Intl.DateTimeFormat('en-US', {
@@ -28,7 +28,11 @@ function shortDate(value: string) {
 }
 
 function methodLabel(method: PaymentMethod) {
-  return method.replace('_', ' ')
+  return method
+    .toLowerCase()
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
 }
 
 export function PaymentsPage() {
@@ -39,32 +43,29 @@ export function PaymentsPage() {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [totalElements, setTotalElements] = useState(0)
+  const [summary, setSummary] = useState<PaymentSummary>({
+    grossAmount: 0,
+    refundedAmount: 0,
+    netAmount: 0,
+    paymentCount: 0,
+  })
   const [isLoading, setIsLoading] = useState(true)
   const [busyPaymentId, setBusyPaymentId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const money = useMemo(() => (value: number) => formatCurrencyAmount(value, brand.currency), [brand.currency])
 
-  const totals = useMemo(
-    () =>
-      payments.reduce(
-        (current, payment) => ({
-          gross: current.gross + payment.amount,
-          refunded: current.refunded + payment.refundedAmount,
-          net: current.net + payment.netAmount,
-        }),
-        { gross: 0, net: 0, refunded: 0 },
-      ),
-    [payments],
-  )
-
   async function loadPayments() {
     setIsLoading(true)
     setError(null)
     try {
-      const page = await billingApi.listPayments(search, method, from, to)
+      const [page, nextSummary] = await Promise.all([
+        billingApi.listPayments(search, method, from, to),
+        billingApi.paymentSummary(search, method, from, to),
+      ])
       setPayments(page.content)
       setTotalElements(page.totalElements)
+      setSummary(nextSummary)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to load payments.')
     } finally {
@@ -180,17 +181,17 @@ export function PaymentsPage() {
         <article>
           <Banknote size={18} aria-hidden="true" />
           <span>Gross received</span>
-          <strong>{money(totals.gross)}</strong>
+          <strong>{money(summary.grossAmount)}</strong>
         </article>
         <article>
           <RotateCcw size={18} aria-hidden="true" />
           <span>Refunded</span>
-          <strong>{money(totals.refunded)}</strong>
+          <strong>{money(summary.refundedAmount)}</strong>
         </article>
         <article>
           <ReceiptText size={18} aria-hidden="true" />
           <span>Net payments</span>
-          <strong>{money(totals.net)}</strong>
+          <strong>{money(summary.netAmount)}</strong>
         </article>
       </section>
 
@@ -212,6 +213,7 @@ export function PaymentsPage() {
             <option value="">All methods</option>
             <option value="CASH">Cash</option>
             <option value="BAKONG_KHQR">Bakong KHQR</option>
+            <option value="ACLEDA">ACLEDA</option>
             <option value="CARD">Card</option>
             <option value="BANK_TRANSFER">Bank transfer</option>
             <option value="MOBILE_PAYMENT">Mobile payment</option>

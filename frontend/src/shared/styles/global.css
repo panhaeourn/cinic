@@ -4308,6 +4308,178 @@ button,
   grid-column: 1 / -1;
 }
 
+.certificates-page {
+  display: grid;
+  gap: 24px;
+}
+
+.certificate-workspace {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  align-items: start;
+}
+
+.certificate-form-card,
+.certificate-preview-card {
+  gap: 18px;
+}
+
+.certificate-helper-copy {
+  margin: 0;
+  color: rgba(39, 53, 70, 0.72);
+  font-size: 0.93rem;
+  line-height: 1.6;
+}
+
+.certificate-preview-shell {
+  padding: 18px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(28, 84, 198, 0.14), transparent 28%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(233, 242, 255, 0.9));
+  border: 1px solid rgba(109, 148, 219, 0.28);
+}
+
+.certificate-canvas {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  aspect-ratio: 841.9 / 595.3;
+  background: #ffffff;
+  box-shadow: 0 28px 60px rgba(37, 66, 120, 0.18);
+}
+
+.certificate-template-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.certificate-layer {
+  position: absolute;
+  inset: 0;
+  font-family: 'Times New Roman', Georgia, serif;
+  color: #111111;
+  pointer-events: none;
+}
+
+.certificate-field {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.15;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.82);
+}
+
+.certificate-kh-name,
+.certificate-kh-gender,
+.certificate-kh-nationality,
+.certificate-kh-birthdate,
+.certificate-kh-course,
+.certificate-kh-issue {
+  font-size: clamp(10px, 0.85vw, 17px);
+}
+
+.certificate-en-name,
+.certificate-en-birthdate,
+.certificate-en-course,
+.certificate-en-issue {
+  font-size: clamp(10px, 0.9vw, 18px);
+}
+
+.certificate-kh-name {
+  left: 14.8%;
+  top: 40.7%;
+  width: 13.4%;
+}
+
+.certificate-kh-gender {
+  left: 28.9%;
+  top: 40.7%;
+  width: 8.2%;
+}
+
+.certificate-kh-nationality {
+  left: 36.4%;
+  top: 40.7%;
+  width: 13%;
+}
+
+.certificate-kh-birthdate {
+  left: 47.3%;
+  top: 40.7%;
+  width: 18.4%;
+}
+
+.certificate-kh-course {
+  left: 34.1%;
+  top: 45.15%;
+  width: 31%;
+}
+
+.certificate-kh-issue {
+  left: 11.7%;
+  top: 49.55%;
+  width: 20.8%;
+}
+
+.certificate-en-name {
+  left: 63.4%;
+  top: 40.55%;
+  width: 17.8%;
+}
+
+.certificate-en-birthdate {
+  left: 83.1%;
+  top: 40.55%;
+  width: 10.2%;
+}
+
+.certificate-en-course {
+  left: 68.3%;
+  top: 44.9%;
+  width: 24%;
+}
+
+.certificate-en-issue {
+  left: 67.3%;
+  top: 49.25%;
+  width: 19.4%;
+}
+
+.certificate-photo-slot {
+  position: absolute;
+  left: 45.15%;
+  top: 63.15%;
+  width: 13.2%;
+  height: 24.8%;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
+}
+
+.certificate-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.certificate-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  color: rgba(27, 67, 153, 0.72);
+  font-size: clamp(10px, 0.85vw, 15px);
+  background: linear-gradient(180deg, rgba(247, 250, 255, 0.72), rgba(224, 234, 249, 0.86));
+}
+
 .report-stat-row,
 .daily-revenue-row,
 .status-chip-row,
@@ -4474,6 +4646,7 @@ button,
 }
 
 @media (max-width: 1100px) {
+  .certificate-workspace,
   .report-filter-panel,
   .reports-kpi-grid,
   .reports-kpi-grid.small,
@@ -4498,6 +4671,1770 @@ button,
   .report-table-row,
   .cashier-report-table .report-table-row {
     grid-template-columns: 1fr;
+  }
+
+  .certificate-preview-shell {
+    padding: 12px;
+  }
+}
+
+/* Final responsive liquid pass: keep the shell stable under browser zoom
+   and reduce the frosted look in favor of clearer iOS-style glass. */
+.app-shell {
+  align-items: start;
+  padding: clamp(12px, 2vw, 30px);
+}
+
+.mediflex-shell {
+  width: min(100%, 1680px);
+  min-width: 0;
+}
+
+.topbar {
+  gap: 16px;
+}
+
+.brand,
+.nav-rail,
+.topbar-actions,
+.search-control,
+.billing-workspace,
+.billing-list-card,
+.billing-form-card,
+.billing-summary-card,
+.billing-payment-card,
+.billing-filter-row,
+.invoice-table,
+.invoice-table-row {
+  min-width: 0;
+}
+
+.app-shell,
+.auth-page {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.035) 24%, rgba(255, 255, 255, 0.01) 76%),
+    radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.16), transparent 20%),
+    radial-gradient(circle at 84% 16%, rgba(202, 224, 255, 0.12), transparent 24%),
+    linear-gradient(180deg, rgba(232, 238, 248, 0.82), rgba(223, 232, 246, 0.72));
+}
+
+.mediflex-shell {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.055) 18%, rgba(255, 255, 255, 0.012) 68%),
+    linear-gradient(145deg, rgba(193, 216, 248, 0.06), rgba(255, 255, 255, 0.018) 42%, rgba(103, 134, 188, 0.045));
+}
+
+.mediflex-shell::before {
+  opacity: 0.42;
+  filter: none;
+}
+
+.nav-rail {
+  padding: 5px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.08) 44%, rgba(255, 255, 255, 0.035)),
+    linear-gradient(145deg, rgba(214, 231, 255, 0.065), rgba(255, 255, 255, 0.02) 48%, rgba(103, 130, 180, 0.045)),
+    rgba(255, 255, 255, 0.035);
+}
+
+.nav-item {
+  min-height: 42px;
+  padding-inline: 16px;
+  color: rgba(28, 40, 54, 0.88);
+}
+
+.nav-item.active,
+.nav-item:hover:not(:disabled) {
+  background:
+    radial-gradient(circle at 22% 0%, rgba(255, 255, 255, 0.62), transparent 40%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.11) 56%, rgba(255, 255, 255, 0.04)),
+    rgba(255, 255, 255, 0.11);
+}
+
+.metric-card,
+.panel,
+.hero-health-panel,
+.risk-card,
+.concerns-card,
+.patient-command-row article,
+.staff-command-row article,
+.billing-command-row article,
+.patient-form-card,
+.patient-list-card,
+.patient-access-card,
+.patient-profile-card,
+.patient-next-card,
+.staff-form-card,
+.staff-list-card,
+.billing-list-card,
+.billing-form-card,
+.billing-summary-card,
+.billing-payment-card,
+.staff-claim-card,
+.staff-claim-help-card,
+.auth-card,
+.staff-claim-panel,
+.access-command-row article,
+.access-list-card,
+.access-detail-card,
+.access-permissions-card,
+.audit-filter-card,
+.audit-log-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.038) 24%, rgba(255, 255, 255, 0.01) 82%),
+    linear-gradient(140deg, rgba(204, 224, 250, 0.05), rgba(255, 255, 255, 0.012) 44%, rgba(101, 132, 182, 0.032)),
+    rgba(255, 255, 255, 0.022);
+  -webkit-backdrop-filter: blur(26px) saturate(155%) contrast(108%) brightness(106%);
+  backdrop-filter: blur(26px) saturate(155%) contrast(108%) brightness(106%);
+}
+
+.viewer-chip,
+.report-strip,
+.age-card,
+.concern-item,
+.pulse-notes > div,
+.plan-item,
+.status-stack div,
+.search-control,
+.patient-search,
+.field div,
+.staff-claim-form label > div,
+.patient-form input,
+.patient-form select,
+.patient-form textarea,
+.staff-form input,
+.staff-form select,
+.billing-form input,
+.billing-form select,
+.billing-form textarea,
+.staff-claim-form input,
+.claim-code-box,
+.patient-table-row,
+.staff-table-row,
+.invoice-table-row,
+.patient-empty,
+.icon-button,
+.avatar-button,
+.nav-scroll-button,
+.profile-code,
+.patient-safety-note,
+.next-action-list button,
+.staff-profile-strip,
+.billing-filter-row select,
+.billing-patient-picker,
+.billing-patient-results button,
+.billing-item-row,
+.billing-item-row button,
+.billing-summary-grid div,
+.billing-line-list div,
+.billing-payment-list div,
+.chart-area,
+.patient-profile-grid div {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.052) 28%, rgba(255, 255, 255, 0.012) 82%),
+    linear-gradient(145deg, rgba(205, 228, 255, 0.045), rgba(255, 255, 255, 0.012) 42%, rgba(101, 134, 184, 0.028)),
+    rgba(255, 255, 255, 0.022);
+  -webkit-backdrop-filter: blur(24px) saturate(150%) contrast(107%) brightness(106%);
+  backdrop-filter: blur(24px) saturate(150%) contrast(107%) brightness(106%);
+}
+
+.status-badge {
+  color: #35516b;
+}
+
+@media (max-width: 1480px) {
+  .topbar {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .nav-rail {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .topbar-actions {
+    justify-self: end;
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .search-control {
+    width: min(100%, 260px);
+  }
+
+  .billing-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1240px) {
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .brand,
+  .nav-rail,
+  .topbar-actions {
+    width: 100%;
+  }
+
+  .topbar-actions {
+    justify-content: flex-start;
+  }
+
+  .search-control {
+    flex: 1 1 220px;
+    width: auto;
+  }
+
+  .billing-command-row {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+
+  .billing-filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .invoice-table-row {
+    grid-template-columns:
+      minmax(92px, 0.84fr)
+      minmax(122px, 1.12fr)
+      minmax(86px, 0.72fr)
+      minmax(78px, 0.58fr)
+      minmax(78px, 0.58fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 960px) {
+  .mediflex-shell {
+    border-radius: 24px;
+  }
+
+  .main-surface {
+    padding-inline: 18px;
+  }
+
+  .patient-form,
+  .staff-form,
+  .billing-form,
+  .billing-adjustments,
+  .billing-summary-grid,
+  .payment-form {
+    grid-template-columns: 1fr;
+  }
+
+  .billing-item-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .billing-item-row > button {
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 720px) {
+  .main-surface {
+    padding-inline: 14px;
+  }
+
+  .billing-item-row {
+    grid-template-columns: 1fr;
+  }
+
+  .billing-item-row > button {
+    grid-column: auto;
+  }
+
+  .invoice-table-row,
+  .billing-list-card .invoice-table-row {
+    grid-template-columns: 1fr;
+  }
+
+  .billing-list-card .invoice-table-row > span:nth-last-child(-n + 2) {
+    text-align: left;
+  }
+}
+
+/* OS26 Liquid Glass adaptation inspired by the taskbar styling guide:
+   clearer capsules, stronger edge highlights, slightly darker internal tint,
+   and grouped top controls instead of foggy full-surface blur. */
+:root {
+  --glass-shell-border: rgba(255, 255, 255, 0.68);
+  --glass-shell-fill: rgba(255, 255, 255, 0.022);
+  --glass-panel-fill: rgba(255, 255, 255, 0.03);
+  --glass-control-fill: rgba(255, 255, 255, 0.042);
+  --glass-nav-fill: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-border-soft: rgba(255, 255, 255, 0.56);
+  --glass-highlight: rgba(255, 255, 255, 0.96);
+  --glass-rim: rgba(255, 255, 255, 0.66);
+  --glass-panel-filter: blur(22px) saturate(154%) contrast(108%) brightness(106%);
+  --glass-control-filter: blur(20px) saturate(150%) contrast(107%) brightness(106%);
+  --glass-shell-filter: blur(26px) saturate(150%) contrast(108%) brightness(106%);
+  --glass-nav-filter: blur(22px) saturate(156%) contrast(108%) brightness(106%);
+  --glass-refraction-opacity: 0.12;
+  --glass-lens-opacity: 0.18;
+}
+
+.app-shell,
+.auth-page {
+  background:
+    radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.2), transparent 20%),
+    radial-gradient(circle at 82% 18%, rgba(212, 225, 246, 0.15), transparent 24%),
+    linear-gradient(180deg, rgba(236, 240, 247, 0.94), rgba(223, 230, 242, 0.9));
+}
+
+.mediflex-shell {
+  border-radius: 36px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.055) 18%, rgba(255, 255, 255, 0.014) 74%),
+    linear-gradient(145deg, rgba(163, 184, 214, 0.075), rgba(255, 255, 255, 0.018) 46%, rgba(106, 130, 168, 0.055));
+  box-shadow:
+    0 34px 90px rgba(27, 37, 53, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.98),
+    inset 0 -1px 1px rgba(57, 72, 96, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.mediflex-shell::before {
+  opacity: 0.34;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent 14%, transparent 80%, rgba(63, 78, 104, 0.035)),
+    radial-gradient(circle at 10% 8%, rgba(255, 255, 255, 0.24), transparent 14%),
+    radial-gradient(circle at 88% 12%, rgba(255, 255, 255, 0.14), transparent 16%);
+  filter: none;
+}
+
+.topbar {
+  gap: 12px;
+  padding: 18px 24px 8px;
+}
+
+.brand,
+.nav-rail,
+.topbar-actions {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.085) 58%, rgba(255, 255, 255, 0.035)),
+    linear-gradient(145deg, rgba(168, 190, 224, 0.055), rgba(255, 255, 255, 0.016) 46%, rgba(101, 124, 160, 0.05)),
+    rgba(255, 255, 255, 0.03);
+  box-shadow:
+    0 18px 44px rgba(23, 33, 48, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.98),
+    inset 0 -1px 1px rgba(44, 58, 79, 0.12);
+  -webkit-backdrop-filter: blur(20px) saturate(145%) contrast(107%);
+  backdrop-filter: blur(20px) saturate(145%) contrast(107%);
+}
+
+.brand::before,
+.nav-rail::before,
+.topbar-actions::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 22%),
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.16), transparent 24%);
+  opacity: 0.72;
+  mix-blend-mode: screen;
+}
+
+.brand,
+.topbar-actions {
+  border-radius: 999px;
+}
+
+.brand {
+  gap: 12px;
+  padding: 8px 14px 8px 10px;
+}
+
+.brand strong {
+  font-size: 15px;
+  font-weight: 760;
+  color: #243241;
+}
+
+.brand span {
+  color: #6d849c;
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background:
+    radial-gradient(circle at 26% 24%, rgba(255, 255, 255, 0.34), transparent 28%),
+    linear-gradient(180deg, rgba(93, 124, 170, 0.94), rgba(67, 94, 139, 0.98));
+  box-shadow:
+    0 14px 24px rgba(40, 57, 83, 0.24),
+    inset 0 1px 1px rgba(255, 255, 255, 0.56);
+}
+
+.nav-rail {
+  padding: 4px;
+  border-radius: 24px;
+}
+
+.nav-rail::after {
+  content: "";
+  position: absolute;
+  inset: auto 16px 6px;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(78, 95, 122, 0.16), transparent);
+  pointer-events: none;
+}
+
+.nav-item,
+.primary-action,
+.secondary-action,
+.danger-action,
+.google-action {
+  min-height: 40px;
+  border-radius: 18px;
+  font-weight: 700;
+}
+
+.nav-item {
+  color: rgba(34, 46, 60, 0.86);
+  background: transparent;
+  box-shadow: none;
+}
+
+.nav-item.active,
+.nav-item:hover:not(:disabled) {
+  color: #1b2a39;
+  border-color: rgba(255, 255, 255, 0.84);
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.68), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.12) 58%, rgba(255, 255, 255, 0.045)),
+    rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 12px 28px rgba(27, 39, 57, 0.11),
+    inset 0 1px 1px rgba(255, 255, 255, 0.98),
+    inset 0 -1px 1px rgba(48, 63, 84, 0.1);
+}
+
+.nav-item.active svg,
+.nav-item:hover:not(:disabled) svg {
+  color: #5d7fa3;
+}
+
+.topbar-actions {
+  gap: 8px;
+  padding: 6px;
+}
+
+.search-control,
+.icon-button,
+.avatar-button,
+.nav-scroll-button {
+  border-color: rgba(255, 255, 255, 0.72);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.44), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08) 60%, rgba(255, 255, 255, 0.03)),
+    rgba(255, 255, 255, 0.03);
+  box-shadow:
+    0 12px 28px rgba(27, 39, 57, 0.09),
+    inset 0 1px 1px rgba(255, 255, 255, 0.94),
+    inset 0 -1px 1px rgba(44, 58, 79, 0.1);
+  -webkit-backdrop-filter: blur(18px) saturate(142%) contrast(106%);
+  backdrop-filter: blur(18px) saturate(142%) contrast(106%);
+}
+
+.search-control {
+  min-height: 40px;
+  width: clamp(180px, 15vw, 250px);
+  color: #667787;
+}
+
+.search-control input {
+  color: #2b3946;
+}
+
+.icon-button,
+.nav-scroll-button {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 16px;
+}
+
+.avatar-button {
+  min-height: 38px;
+  padding: 0 10px 0 6px;
+  border-radius: 18px;
+}
+
+.avatar-button span {
+  width: 26px;
+  height: 26px;
+  background:
+    radial-gradient(circle at 26% 24%, rgba(255, 255, 255, 0.24), transparent 28%),
+    linear-gradient(180deg, rgba(92, 120, 160, 0.98), rgba(66, 90, 128, 0.98));
+}
+
+.metric-card,
+.panel,
+.hero-health-panel,
+.risk-card,
+.concerns-card,
+.patient-command-row article,
+.staff-command-row article,
+.billing-command-row article,
+.patient-form-card,
+.patient-list-card,
+.patient-access-card,
+.patient-profile-card,
+.patient-next-card,
+.staff-form-card,
+.staff-list-card,
+.billing-list-card,
+.billing-form-card,
+.billing-summary-card,
+.billing-payment-card,
+.staff-claim-card,
+.staff-claim-help-card,
+.auth-card,
+.staff-claim-panel,
+.access-command-row article,
+.access-list-card,
+.access-detail-card,
+.access-permissions-card,
+.audit-filter-card,
+.audit-log-card {
+  border-radius: 26px;
+  border-color: rgba(255, 255, 255, 0.66);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.048) 24%, rgba(255, 255, 255, 0.012) 84%),
+    linear-gradient(145deg, rgba(171, 191, 221, 0.045), rgba(255, 255, 255, 0.012) 44%, rgba(99, 121, 154, 0.026)),
+    rgba(255, 255, 255, 0.018);
+  box-shadow:
+    0 20px 50px rgba(27, 37, 53, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.94),
+    inset 0 -1px 1px rgba(48, 63, 84, 0.08);
+}
+
+.command-icon,
+.status-badge {
+  border: 1px solid rgba(255, 255, 255, 0.66);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.4), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.07) 60%, rgba(255, 255, 255, 0.03)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow:
+    0 10px 22px rgba(27, 37, 53, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+
+.status-badge {
+  color: #4c6a87;
+}
+
+.nav-scroll-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+}
+
+.nav-item {
+  min-height: 44px;
+  padding-inline: 18px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  letter-spacing: 0;
+}
+
+.nav-item.active,
+.nav-item:hover:not(:disabled) {
+  box-shadow:
+    0 14px 30px rgba(27, 39, 57, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.99),
+    inset 0 -1px 1px rgba(48, 63, 84, 0.09),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.bakong-khqr-panel,
+.khqr-card,
+.staff-claim-panel,
+.claim-code-box,
+.patient-empty,
+.form-alert,
+.success-alert {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.bakong-khqr-panel,
+.staff-claim-panel,
+.claim-code-box,
+.patient-empty {
+  border-color: rgba(255, 255, 255, 0.66);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.052) 28%, rgba(255, 255, 255, 0.012) 82%),
+    linear-gradient(145deg, rgba(198, 219, 246, 0.05), rgba(255, 255, 255, 0.015) 42%, rgba(104, 126, 160, 0.032)),
+    rgba(255, 255, 255, 0.022);
+  box-shadow:
+    0 18px 40px rgba(27, 37, 53, 0.09),
+    inset 0 1px 1px rgba(255, 255, 255, 0.94),
+    inset 0 -1px 1px rgba(48, 63, 84, 0.08);
+  -webkit-backdrop-filter: blur(22px) saturate(150%) contrast(108%);
+  backdrop-filter: blur(22px) saturate(150%) contrast(108%);
+}
+
+.bakong-khqr-panel::before,
+.staff-claim-panel::before,
+.claim-code-box::before,
+.patient-empty::before,
+.form-alert::before,
+.success-alert::before,
+.khqr-card::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 22%),
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.16), transparent 24%);
+  opacity: 0.68;
+  mix-blend-mode: screen;
+}
+
+.khqr-card {
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08) 26%, rgba(255, 255, 255, 0.03) 84%),
+    linear-gradient(145deg, rgba(180, 199, 227, 0.08), rgba(255, 255, 255, 0.02) 48%, rgba(97, 119, 151, 0.05)),
+    rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 24px 52px rgba(20, 30, 44, 0.14),
+    inset 0 1px 1px rgba(255, 255, 255, 0.98),
+    inset 0 -1px 1px rgba(47, 62, 83, 0.08);
+  -webkit-backdrop-filter: blur(28px) saturate(155%) contrast(108%);
+  backdrop-filter: blur(28px) saturate(155%) contrast(108%);
+}
+
+.khqr-header {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.18), transparent 28%),
+    linear-gradient(180deg, rgba(219, 74, 58, 0.98), rgba(188, 49, 39, 0.98));
+}
+
+.khqr-body {
+  background: transparent;
+}
+
+.khqr-image-wrap img {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 18px 34px rgba(20, 30, 44, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.94);
+}
+
+.form-alert,
+.success-alert {
+  padding: 12px 14px;
+  border-width: 1px;
+}
+
+.form-alert {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(180, 74, 73, 0.08)),
+    rgba(255, 255, 255, 0.08);
+}
+
+.success-alert {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(85, 185, 109, 0.08)),
+    rgba(255, 255, 255, 0.08);
+}
+
+/* Final liquid-glass refinement: clearer lensing, lighter fill, stronger specular edges. */
+:root {
+  --glass-shell-border: rgba(255, 255, 255, 0.54);
+  --glass-shell-fill: rgba(255, 255, 255, 0.018);
+  --glass-panel-fill: rgba(255, 255, 255, 0.038);
+  --glass-control-fill: rgba(255, 255, 255, 0.048);
+  --glass-nav-fill: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.62);
+  --glass-border-soft: rgba(255, 255, 255, 0.5);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-rim: rgba(255, 255, 255, 0.58);
+  --glass-panel-filter: blur(24px) saturate(182%) contrast(114%) brightness(106%);
+  --glass-control-filter: blur(22px) saturate(176%) contrast(112%) brightness(105%);
+  --glass-shell-filter: blur(28px) saturate(176%) contrast(112%) brightness(105%);
+  --glass-nav-filter: blur(24px) saturate(182%) contrast(114%) brightness(106%);
+  --glass-refraction-opacity: 0.18;
+  --glass-lens-opacity: 0.26;
+}
+
+.app-shell,
+.auth-page {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03) 28%, rgba(255, 255, 255, 0.01) 72%),
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.22), transparent 22%),
+    radial-gradient(circle at 84% 16%, rgba(195, 229, 255, 0.16), transparent 26%),
+    radial-gradient(circle at 54% 72%, rgba(255, 255, 255, 0.08), transparent 22%);
+}
+
+.mediflex-shell {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.045) 22%, rgba(255, 255, 255, 0.012) 68%),
+    linear-gradient(145deg, rgba(178, 206, 255, 0.085), rgba(255, 255, 255, 0.018) 42%, rgba(89, 119, 170, 0.075));
+  box-shadow:
+    0 36px 104px rgba(24, 39, 61, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(54, 74, 108, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.mediflex-shell::before {
+  opacity: 0.56;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 12%, transparent 78%, rgba(46, 68, 104, 0.04)),
+    radial-gradient(circle at 14% 10%, rgba(255, 255, 255, 0.22), transparent 16%),
+    radial-gradient(circle at 82% 14%, rgba(255, 255, 255, 0.16), transparent 18%),
+    radial-gradient(circle at 68% 88%, rgba(151, 198, 232, 0.08), transparent 18%);
+  filter: url(#clinic-liquid-specular);
+}
+
+.metric-card,
+.panel,
+.hero-health-panel,
+.risk-card,
+.concerns-card,
+.patient-command-row article,
+.staff-command-row article,
+.billing-command-row article,
+.patient-form-card,
+.patient-list-card,
+.patient-access-card,
+.patient-profile-card,
+.patient-next-card,
+.staff-form-card,
+.staff-list-card,
+.billing-list-card,
+.billing-form-card,
+.billing-summary-card,
+.billing-payment-card,
+.staff-claim-card,
+.staff-claim-help-card,
+.auth-card,
+.staff-claim-panel,
+.access-command-row article,
+.access-list-card,
+.access-detail-card,
+.access-permissions-card,
+.audit-filter-card,
+.audit-log-card {
+  border-color: rgba(255, 255, 255, 0.58);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.045) 24%, rgba(255, 255, 255, 0.012) 78%),
+    linear-gradient(140deg, rgba(202, 224, 255, 0.06), rgba(255, 255, 255, 0.014) 44%, rgba(93, 126, 182, 0.045)),
+    rgba(255, 255, 255, 0.03);
+  box-shadow:
+    0 22px 54px rgba(24, 39, 61, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.82),
+    inset 0 -1px 1px rgba(45, 61, 89, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(24px) saturate(175%) contrast(112%) brightness(106%);
+  backdrop-filter: blur(24px) saturate(175%) contrast(112%) brightness(106%);
+}
+
+.metric-card::before,
+.panel::before,
+.hero-health-panel::before,
+.risk-card::before,
+.concerns-card::before,
+.patient-command-row article::before,
+.staff-command-row article::before,
+.billing-command-row article::before,
+.patient-form-card::before,
+.patient-list-card::before,
+.patient-access-card::before,
+.patient-profile-card::before,
+.patient-next-card::before,
+.staff-form-card::before,
+.staff-list-card::before,
+.billing-list-card::before,
+.billing-form-card::before,
+.billing-summary-card::before,
+.billing-payment-card::before,
+.staff-claim-card::before,
+.staff-claim-help-card::before,
+.auth-card::before,
+.staff-claim-panel::before {
+  opacity: 0.58;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent 18%),
+    radial-gradient(circle at 90% 8%, rgba(255, 255, 255, 0.18), transparent 18%),
+    radial-gradient(circle at 12% 94%, rgba(255, 255, 255, 0.08), transparent 22%);
+}
+
+.metric-card::after,
+.panel::after,
+.hero-health-panel::after,
+.risk-card::after,
+.concerns-card::after,
+.patient-command-row article::after,
+.staff-command-row article::after,
+.billing-command-row article::after,
+.patient-form-card::after,
+.patient-list-card::after,
+.patient-access-card::after,
+.patient-profile-card::after,
+.patient-next-card::after,
+.staff-form-card::after,
+.staff-list-card::after,
+.billing-list-card::after,
+.billing-form-card::after,
+.billing-summary-card::after,
+.billing-payment-card::after,
+.staff-claim-card::after,
+.staff-claim-help-card::after,
+.auth-card::after,
+.staff-claim-panel::after {
+  opacity: 0.16;
+  background:
+    radial-gradient(circle at 22% 12%, rgba(255, 255, 255, 0.12), transparent 16%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 18%, transparent 82%, rgba(33, 52, 72, 0.05));
+}
+
+.viewer-chip,
+.report-strip,
+.age-card,
+.concern-item,
+.pulse-notes > div,
+.plan-item,
+.status-stack div,
+.search-control,
+.patient-search,
+.field div,
+.staff-claim-form label > div,
+.patient-form input,
+.patient-form select,
+.patient-form textarea,
+.staff-form input,
+.staff-form select,
+.billing-form input,
+.billing-form select,
+.billing-form textarea,
+.staff-claim-form input,
+.claim-code-box,
+.patient-table-row,
+.staff-table-row,
+.invoice-table-row,
+.patient-empty,
+.icon-button,
+.avatar-button,
+.nav-scroll-button,
+.profile-code,
+.patient-safety-note,
+.next-action-list button,
+.staff-profile-strip,
+.billing-filter-row select,
+.billing-patient-picker,
+.billing-patient-results button,
+.billing-item-row,
+.billing-item-row button,
+.billing-summary-grid div,
+.billing-line-list div,
+.billing-payment-list div,
+.chart-area,
+.patient-profile-grid div {
+  border-color: rgba(255, 255, 255, 0.52);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05) 28%, rgba(255, 255, 255, 0.012) 82%),
+    linear-gradient(145deg, rgba(194, 222, 255, 0.055), rgba(255, 255, 255, 0.014) 42%, rgba(96, 131, 182, 0.04)),
+    rgba(255, 255, 255, 0.028);
+  box-shadow:
+    0 14px 28px rgba(24, 39, 61, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.78),
+    inset 0 -1px 1px rgba(39, 57, 82, 0.12);
+  -webkit-backdrop-filter: blur(22px) saturate(168%) contrast(110%) brightness(106%);
+  backdrop-filter: blur(22px) saturate(168%) contrast(110%) brightness(106%);
+}
+
+.viewer-chip::after,
+.report-strip::after,
+.age-card::after,
+.concern-item::after,
+.pulse-notes > div::after,
+.plan-item::after,
+.status-stack div::after,
+.search-control::after,
+.patient-search::after,
+.field div::after,
+.staff-claim-form label > div::after,
+.claim-code-box::after,
+.patient-table-row::after,
+.staff-table-row::after,
+.invoice-table-row::after,
+.patient-empty::after,
+.icon-button::after,
+.avatar-button::after,
+.nav-scroll-button::after,
+.profile-code::after,
+.patient-safety-note::after,
+.next-action-list button::after,
+.staff-profile-strip::after,
+.billing-filter-row select::after,
+.billing-patient-picker::after,
+.billing-patient-results button::after,
+.billing-item-row::after,
+.billing-item-row button::after,
+.billing-summary-grid div::after,
+.billing-line-list div::after,
+.billing-payment-list div::after,
+.chart-area::after,
+.patient-profile-grid div::after {
+  opacity: 0.32;
+  background:
+    linear-gradient(132deg, rgba(255, 255, 255, 0.18), transparent 24%),
+    radial-gradient(circle at 82% 100%, rgba(255, 255, 255, 0.08), transparent 26%);
+}
+
+.nav-rail {
+  border-color: rgba(255, 255, 255, 0.66);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.075) 44%, rgba(255, 255, 255, 0.03)),
+    linear-gradient(145deg, rgba(214, 232, 255, 0.08), rgba(255, 255, 255, 0.018) 48%, rgba(95, 125, 176, 0.06)),
+    rgba(255, 255, 255, 0.035);
+  box-shadow:
+    0 22px 52px rgba(24, 39, 56, 0.16),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(31, 46, 64, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(26px) saturate(185%) contrast(114%) brightness(107%);
+  backdrop-filter: blur(26px) saturate(185%) contrast(114%) brightness(107%);
+}
+
+.nav-rail::before,
+.nav-rail::after {
+  opacity: 0.46;
+}
+
+.nav-item {
+  color: rgba(25, 36, 48, 0.88);
+  font-size: 14px;
+  font-weight: 720;
+}
+
+.nav-item.active,
+.nav-item:hover:not(:disabled) {
+  color: #1c2b3b;
+  border-color: rgba(255, 255, 255, 0.78);
+  background:
+    radial-gradient(circle at 22% 0%, rgba(255, 255, 255, 0.56), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.1) 56%, rgba(255, 255, 255, 0.04)),
+    rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 14px 30px rgba(24, 39, 56, 0.13),
+    inset 0 1px 1px rgba(255, 255, 255, 0.92),
+    inset 0 -1px 1px rgba(33, 48, 69, 0.12);
+}
+
+.nav-item.active svg,
+.nav-item:hover:not(:disabled) svg {
+  color: #4b7da0;
+}
+
+.primary-action,
+.secondary-action,
+.danger-action,
+.google-action,
+.icon-button,
+.avatar-button,
+.nav-scroll-button,
+.nav-item,
+.risk-callout button,
+.next-action-list button,
+.billing-patient-results button,
+.billing-item-row button {
+  border-color: rgba(255, 255, 255, 0.64);
+  background:
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.44), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.07) 58%, rgba(255, 255, 255, 0.03)),
+    rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 16px 34px rgba(24, 39, 56, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.88),
+    inset 0 -1px 1px rgba(31, 46, 64, 0.12);
+  -webkit-backdrop-filter: blur(22px) saturate(180%) contrast(114%) brightness(106%);
+  backdrop-filter: blur(22px) saturate(180%) contrast(114%) brightness(106%);
+}
+
+.primary-action::before,
+.secondary-action::before,
+.danger-action::before,
+.google-action::before,
+.icon-button::before,
+.avatar-button::before,
+.nav-scroll-button::before,
+.nav-item::after,
+.risk-callout button::before,
+.next-action-list button::before,
+.billing-patient-results button::before,
+.billing-item-row button::before {
+  opacity: 0.52;
+  background:
+    linear-gradient(128deg, rgba(255, 255, 255, 0.56), transparent 28%),
+    radial-gradient(circle at 78% 100%, rgba(255, 255, 255, 0.18), transparent 34%);
+}
+
+.primary-action {
+  color: #182433;
+  background:
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.52), transparent 42%),
+    linear-gradient(145deg, rgba(108, 165, 204, 0.26), rgba(187, 223, 236, 0.13) 52%, rgba(255, 255, 255, 0.04)),
+    rgba(255, 255, 255, 0.075);
+}
+
+.secondary-action,
+.google-action,
+.risk-callout button {
+  color: #233548;
+}
+
+.danger-action,
+.secondary-action.danger,
+.billing-item-row button {
+  color: #7a2d2b;
+  background:
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.48), transparent 42%),
+    linear-gradient(145deg, rgba(180, 74, 73, 0.12), rgba(255, 255, 255, 0.08) 56%, rgba(255, 255, 255, 0.03)),
+    rgba(255, 255, 255, 0.06);
+}
+
+.primary-action:hover:not(:disabled),
+.secondary-action:hover:not(:disabled),
+.danger-action:hover:not(:disabled),
+.google-action:hover:not(:disabled),
+.icon-button:hover:not(:disabled),
+.avatar-button:hover:not(:disabled),
+.nav-scroll-button:hover:not(:disabled),
+.nav-item:hover:not(:disabled),
+.risk-callout button:hover:not(:disabled),
+.next-action-list button:hover:not(:disabled),
+.billing-patient-results button:hover:not(:disabled),
+.billing-item-row button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    0 18px 42px rgba(24, 39, 56, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.94),
+    inset 0 -1px 1px rgba(31, 46, 64, 0.14);
+}
+
+.primary-action:active:not(:disabled),
+.secondary-action:active:not(:disabled),
+.danger-action:active:not(:disabled),
+.google-action:active:not(:disabled),
+.icon-button:active:not(:disabled),
+.avatar-button:active:not(:disabled),
+.nav-scroll-button:active:not(:disabled),
+.nav-item:active:not(:disabled),
+.risk-callout button:active:not(:disabled),
+.next-action-list button:active:not(:disabled),
+.billing-patient-results button:active:not(:disabled),
+.billing-item-row button:active:not(:disabled) {
+  box-shadow:
+    0 10px 24px rgba(24, 39, 56, 0.11),
+    inset 0 1px 2px rgba(31, 46, 64, 0.14),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.56);
+}
+
+.status-badge {
+  border: 1px solid rgba(255, 255, 255, 0.64);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.44), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.08) 60%, rgba(255, 255, 255, 0.03)),
+    rgba(255, 255, 255, 0.065);
+  color: #2d4761;
+  box-shadow:
+    0 12px 24px rgba(24, 39, 56, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.86),
+    inset 0 -1px 1px rgba(31, 46, 64, 0.1);
+  -webkit-backdrop-filter: blur(20px) saturate(175%) contrast(112%) brightness(106%);
+  backdrop-filter: blur(20px) saturate(175%) contrast(112%) brightness(106%);
+}
+
+.form-alert,
+.success-alert {
+  border-color: rgba(255, 255, 255, 0.68);
+  box-shadow:
+    0 18px 38px rgba(24, 39, 56, 0.09),
+    inset 0 1px 1px rgba(255, 255, 255, 0.86);
+  -webkit-backdrop-filter: blur(22px) saturate(170%) contrast(112%);
+  backdrop-filter: blur(22px) saturate(170%) contrast(112%);
+}
+
+/* Final pass: clearer transparency and stronger popup separation. */
+.mediflex-shell {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.026) 24%, rgba(255, 255, 255, 0.008) 72%),
+    linear-gradient(145deg, rgba(176, 208, 255, 0.058), rgba(255, 255, 255, 0.012) 44%, rgba(92, 126, 186, 0.05));
+}
+
+.mediflex-panel,
+.dashboard-card,
+.workspace-card,
+.stats-card,
+.registry-panel,
+.form-panel,
+.glass-panel,
+.patient-empty,
+.claim-code-box,
+.bakong-khqr-panel,
+.staff-claim-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.028) 30%, rgba(255, 255, 255, 0.008) 84%),
+    linear-gradient(145deg, rgba(196, 224, 255, 0.04), rgba(255, 255, 255, 0.01) 48%, rgba(95, 123, 170, 0.03)),
+    rgba(255, 255, 255, 0.014);
+  border-color: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    0 22px 46px rgba(24, 39, 56, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(31, 46, 64, 0.08);
+  -webkit-backdrop-filter: blur(24px) saturate(184%) contrast(116%) brightness(106%);
+  backdrop-filter: blur(24px) saturate(184%) contrast(116%) brightness(106%);
+}
+
+.bakong-khqr-panel,
+.staff-claim-panel,
+.claim-code-box {
+  border-color: rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 28px 68px rgba(19, 31, 47, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.96),
+    inset 0 -1px 1px rgba(31, 46, 64, 0.1);
+}
+
+.bakong-khqr-panel::after,
+.staff-claim-panel::after,
+.claim-code-box::after {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  z-index: -1;
+  border-radius: calc(var(--radius-2xl, 28px) + 16px);
+  background:
+    radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.22), transparent 38%),
+    radial-gradient(circle at 50% 100%, rgba(122, 170, 214, 0.16), transparent 46%);
+  filter: blur(20px);
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+.khqr-card {
+  border-color: rgba(255, 255, 255, 0.8);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.05) 26%, rgba(255, 255, 255, 0.018) 84%),
+    linear-gradient(145deg, rgba(180, 203, 234, 0.06), rgba(255, 255, 255, 0.015) 48%, rgba(97, 119, 151, 0.04)),
+    rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 30px 76px rgba(20, 30, 44, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.98),
+    inset 0 -1px 1px rgba(47, 62, 83, 0.08);
+}
+
+.nav-rail {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05) 44%, rgba(255, 255, 255, 0.016)),
+    linear-gradient(145deg, rgba(214, 232, 255, 0.055), rgba(255, 255, 255, 0.014) 48%, rgba(95, 125, 176, 0.04)),
+    rgba(255, 255, 255, 0.022);
+}
+
+.nav-scroll-button,
+.nav-item,
+.primary-action,
+.secondary-action,
+.danger-action,
+.google-action,
+.icon-button,
+.avatar-button {
+  background:
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.36), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.042) 58%, rgba(255, 255, 255, 0.015)),
+    rgba(255, 255, 255, 0.028);
+}
+
+.nav-item.active,
+.nav-item:hover:not(:disabled) {
+  background:
+    radial-gradient(circle at 22% 0%, rgba(255, 255, 255, 0.48), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.075) 56%, rgba(255, 255, 255, 0.025)),
+    rgba(255, 255, 255, 0.056);
+  box-shadow:
+    0 18px 36px rgba(24, 39, 56, 0.14),
+    inset 0 1px 1px rgba(255, 255, 255, 0.94),
+    inset 0 -1px 1px rgba(33, 48, 69, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+/* Topbar resilience: prevent horizontal overflow and clipping at zoomed desktop widths. */
+.app-shell,
+.mediflex-shell {
+  overflow-x: clip;
+}
+
+.topbar {
+  grid-template-areas: "brand nav actions";
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+}
+
+.topbar > .brand {
+  grid-area: brand;
+}
+
+.topbar > .nav-rail {
+  grid-area: nav;
+}
+
+.topbar > .topbar-actions {
+  grid-area: actions;
+}
+
+.brand {
+  min-width: 0;
+  max-width: min(100%, 320px);
+  flex-shrink: 1;
+}
+
+.brand > :last-child {
+  min-width: 0;
+}
+
+.brand strong,
+.brand span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-rail {
+  min-width: 0;
+  width: 100%;
+}
+
+.topbar-actions {
+  min-width: 0;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.search-control {
+  flex: 1 1 168px;
+  min-width: 0;
+  width: min(100%, 220px);
+}
+
+.topbar-popover {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(280px, calc(100vw - 44px));
+  border: 1px solid rgba(255, 255, 255, 0.66);
+  border-radius: 16px;
+  padding: 13px 15px;
+  color: var(--ink);
+  background: rgba(243, 248, 252, 0.92);
+  box-shadow: 0 18px 42px rgba(24, 39, 61, 0.18);
+  backdrop-filter: blur(20px) saturate(150%);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.notification-popover {
+  display: grid;
+  gap: 4px;
+}
+
+.notification-popover span {
+  color: var(--muted);
+}
+
+@media (max-width: 1680px) {
+  .topbar {
+    grid-template-areas:
+      "brand actions"
+      "nav nav";
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .brand {
+    max-width: 100%;
+  }
+
+  .nav-rail {
+    width: 100%;
+  }
+
+  .topbar-actions {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 1180px) {
+  .topbar {
+    grid-template-areas:
+      "brand"
+      "nav"
+      "actions";
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .topbar-actions {
+    justify-content: stretch;
+  }
+
+  .search-control {
+    width: 100%;
+  }
+}
+
+.route-loading {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.patient-table-scroll {
+  height: min(55vh, 640px);
+  min-height: 280px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  contain: strict;
+}
+
+.patient-virtual-space {
+  position: relative;
+  width: 100%;
+}
+
+.patient-virtual-space > .patient-table-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+}
+
+.patient-load-more {
+  padding: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* Workspace stability and completed department management. */
+.staff-workspace,
+.access-workspace,
+.department-workspace {
+  align-items: start;
+}
+
+.staff-list-card,
+.staff-form-card,
+.access-list-card,
+.access-detail-card,
+.access-permissions-card,
+.department-list-card,
+.department-form-card {
+  min-width: 0;
+}
+
+.staff-list-card {
+  overflow: visible;
+}
+
+.staff-table {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding-bottom: 6px;
+  scrollbar-color: rgba(92, 139, 173, 0.48) transparent;
+  scrollbar-width: thin;
+}
+
+.staff-table-row {
+  min-width: 710px;
+}
+
+.access-workspace {
+  grid-template-areas:
+    "users roles"
+    "permissions permissions";
+  grid-template-columns: minmax(360px, 0.9fr) minmax(460px, 1.1fr);
+}
+
+.access-list-card {
+  grid-area: users;
+}
+
+.access-detail-card {
+  grid-area: roles;
+}
+
+.access-permissions-card {
+  grid-area: permissions;
+}
+
+.permission-list {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+.permission-list details {
+  border: 1px solid var(--glass-border-soft);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.permission-list summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.permission-list summary::-webkit-details-marker {
+  display: none;
+}
+
+.permission-list summary::after {
+  content: "+";
+  color: var(--sky);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.permission-list details[open] summary::after {
+  content: "−";
+}
+
+.permission-list summary span {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.permission-list summary strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.access-detail-card > .primary-action {
+  justify-content: center;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.permission-code-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 0 14px 14px;
+}
+
+.permission-code-grid code {
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: var(--color-text-soft);
+  background: rgba(255, 255, 255, 0.18);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.department-command-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.department-command-row article,
+.department-list-card,
+.department-form-card {
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.045) 24%, rgba(255, 255, 255, 0.012) 78%),
+    linear-gradient(140deg, rgba(202, 224, 255, 0.06), rgba(255, 255, 255, 0.014) 44%, rgba(93, 126, 182, 0.045)),
+    rgba(255, 255, 255, 0.03);
+  box-shadow:
+    0 22px 54px rgba(24, 39, 61, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.82),
+    inset 0 -1px 1px rgba(45, 61, 89, 0.12);
+  backdrop-filter: blur(22px) saturate(165%);
+}
+
+.department-command-row article {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+}
+
+.department-command-row strong {
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.department-command-row small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.department-workspace {
+  display: grid;
+  grid-template-columns: minmax(420px, 0.95fr) minmax(460px, 1.05fr);
+  gap: 16px;
+}
+
+.department-list-card,
+.department-form-card {
+  padding: 22px;
+}
+
+.department-list {
+  display: grid;
+  gap: 9px;
+  max-height: min(58vh, 660px);
+  margin-top: 18px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.department-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 70px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  padding: 12px 14px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.11);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.department-row:hover,
+.department-row.active {
+  border-color: rgba(97, 154, 191, 0.5);
+  background: rgba(235, 247, 255, 0.32);
+  transform: translateY(-1px);
+}
+
+.department-row > span:nth-child(2) {
+  min-width: 0;
+}
+
+.department-row strong,
+.department-row small {
+  display: block;
+}
+
+.department-row strong {
+  color: var(--ink);
+}
+
+.department-row small {
+  margin-top: 5px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.department-row-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--sky);
+  background: rgba(174, 214, 226, 0.2);
+}
+
+.department-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.department-form label {
+  display: grid;
+  gap: 7px;
+}
+
+.department-form label > span {
+  color: #596164;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.department-form input,
+.department-form select,
+.department-form textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.56);
+  border-radius: 16px;
+  outline: 0;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  font: inherit;
+}
+
+.department-form input,
+.department-form select {
+  min-height: 46px;
+  padding: 0 13px;
+}
+
+.department-form textarea {
+  min-height: 150px;
+  padding: 13px;
+  resize: vertical;
+}
+
+.department-form input:focus,
+.department-form select:focus,
+.department-form textarea:focus {
+  border-color: rgba(97, 154, 191, 0.55);
+  box-shadow: 0 0 0 4px rgba(174, 214, 226, 0.2);
+}
+
+.department-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.department-safety-note {
+  margin: 20px 0 0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: var(--muted);
+  background: rgba(174, 214, 226, 0.12);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+@media (max-width: 1400px) {
+  .staff-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .access-workspace,
+  .department-workspace {
+    grid-template-areas: none;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .access-list-card,
+  .access-detail-card,
+  .access-permissions-card {
+    grid-area: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .department-command-row,
+  .department-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .department-list-card,
+  .department-form-card {
+    padding: 16px;
+  }
+
+  .department-form-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .department-form-actions .primary-action,
+  .department-form-actions .secondary-action {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .staff-table {
+    overflow: visible;
+  }
+
+  .staff-table-head {
+    display: none;
+  }
+
+  .staff-table-row {
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar-actions {
+    display: grid;
+    grid-template-columns: 44px 44px minmax(0, 1fr);
+    width: 100%;
+  }
+
+  .topbar-actions .search-control {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .topbar-actions .icon-button {
+    width: 44px;
+  }
+
+  .topbar-actions .avatar-button {
+    justify-content: center;
+    width: 100%;
   }
 }
 

@@ -8,7 +8,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 
-import anatomySystem from '../../assets/body-figma.png'
+import anatomySystem from '../../assets/body-figma.webp'
 import { resolvePrimaryRole } from '../../app/layouts/navigation'
 import { useAuth } from '../auth/components/AuthContext'
 import { StatusBadge } from '../../shared/ui/StatusBadge'

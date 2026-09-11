@@ -34,6 +34,17 @@ export type PatientPayload = {
   emergencyContactPhone?: string
 }
 
+export type PatientListItem = Pick<
+  Patient,
+  'id' | 'patientCode' | 'fullName' | 'gender' | 'dateOfBirth' | 'phone' | 'email' | 'bloodType' | 'createdAt'
+>
+
+export type CursorPage<T> = {
+  items: T[]
+  nextCursor: string | null
+  hasMore: boolean
+}
+
 export type PageResponse<T> = {
   content: T[]
   totalElements: number

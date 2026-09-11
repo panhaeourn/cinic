@@ -1,5 +1,8 @@
 import { env } from '../config/env'
-import { tokenStorage } from '../../features/auth/services/tokenStorage'
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
+type CsrfResponse = { headerName: string; token: string }
+let csrfRequest: Promise<CsrfResponse> | null = null
 
 type ApiError = {
   message?: string
@@ -15,33 +18,72 @@ type ApiError = {
 }
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = tokenStorage.getAccessToken()
-  const response = await fetch(`${env.apiBaseUrl}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  })
+	const method = (options.method ?? 'GET').toUpperCase()
+	const stateChanging = !SAFE_METHODS.has(method)
 
-  const responseText = await response.text()
-  const parsedBody = responseText ? (safeJsonParse(responseText) as ApiError | T | null) : null
+	for (let attempt = 0; attempt < 2; attempt += 1) {
+		const headers = new Headers(options.headers)
+		if (options.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
+			headers.set('Content-Type', 'application/json')
+		}
+		if (stateChanging) {
+			const csrf = await getCsrfToken(attempt > 0)
+			headers.set(csrf.headerName, csrf.token)
+		}
 
-  if (!response.ok) {
-    const error = (parsedBody ?? {}) as ApiError
-    const fieldError = error.fieldErrors?.[0]
-    const message = fieldError
-      ? `${fieldError.field}: ${fieldError.message}`
-      : error.message ?? error.detail ?? formatSpringError(error) ?? extractErrorMessage(responseText)
-    throw new Error(message ?? friendlyHttpError(response.status, response.statusText))
-  }
+		const response = await fetch(`${env.apiBaseUrl}${path}`, {
+			...options,
+			credentials: 'include',
+			headers,
+		})
+		const responseText = await response.text()
+		const parsedBody = responseText ? (safeJsonParse(responseText) as ApiError | T | null) : null
 
-  if (response.status === 204) {
-    return undefined as T
-  }
+		if (response.status === 403 && stateChanging && attempt === 0 && !options.signal?.aborted) {
+			continue
+		}
+		if (!response.ok) {
+			const error = (parsedBody ?? {}) as ApiError
+			const fieldError = error.fieldErrors?.[0]
+			const message = fieldError
+				? `${fieldError.field}: ${fieldError.message}`
+				: error.message ?? error.detail ?? formatSpringError(error) ?? extractErrorMessage(responseText)
+			throw new Error(message ?? friendlyHttpError(response.status, response.statusText))
+		}
+		if (response.status === 204) {
+			return undefined as T
+		}
+		return parsedBody as T
+	}
 
-  return parsedBody as T
+	throw new Error('Request failed after refreshing request security.')
+}
+
+async function getCsrfToken(forceRefresh = false) {
+	const existing = forceRefresh ? null : readCookie('XSRF-TOKEN')
+	if (existing) {
+		return { headerName: 'X-XSRF-TOKEN', token: existing }
+	}
+	csrfRequest ??= fetch(`${env.apiBaseUrl}/auth/csrf`, {
+		credentials: 'include',
+		headers: { Accept: 'application/json' },
+	})
+		.then(async (response) => {
+			if (!response.ok) {
+				throw new Error('Unable to initialize request security.')
+			}
+			return (await response.json()) as CsrfResponse
+		})
+		.finally(() => {
+			csrfRequest = null
+		})
+	return csrfRequest
+}
+
+function readCookie(name: string) {
+	const prefix = `${encodeURIComponent(name)}=`
+	const value = document.cookie.split('; ').find((cookie) => cookie.startsWith(prefix))
+	return value ? decodeURIComponent(value.slice(prefix.length)) : null
 }
 
 function safeJsonParse(value: string) {

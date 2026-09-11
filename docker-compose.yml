@@ -1,0 +1,74 @@
+name: mediflex-clinic
+
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-clinic_app}
+      POSTGRES_USER: ${POSTGRES_USER:-clinic}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - clinic-postgres:/var/lib/postgresql/data
+    networks:
+      - data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/${POSTGRES_DB:-clinic_app}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-clinic}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_JWT_SECRET_BASE64: ${APP_JWT_SECRET_BASE64:?Set APP_JWT_SECRET_BASE64 in .env}
+      APP_ADMIN_GOOGLE_EMAIL: ${APP_ADMIN_GOOGLE_EMAIL:-admin@example.com}
+      APP_ALLOWED_ORIGINS: ${APP_PUBLIC_ORIGIN:-http://localhost:8080}
+      APP_FRONTEND_URL: ${APP_PUBLIC_ORIGIN:-http://localhost:8080}
+      APP_SECURE_COOKIES: ${APP_SECURE_COOKIES:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-disabled.apps.googleusercontent.com}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-disabled}
+      DB_POOL_MAX_SIZE: ${DB_POOL_MAX_SIZE:-20}
+      DB_POOL_MIN_IDLE: ${DB_POOL_MIN_IDLE:-4}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - data
+      - edge
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "${APP_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  clinic-postgres:
+
+networks:
+  data:
+    internal: true
+  edge:

@@ -24,6 +24,7 @@ import com.mediflow.clinic.billing.dto.InvoiceResponse;
 import com.mediflow.clinic.billing.dto.PaymentCreateRequest;
 import com.mediflow.clinic.billing.dto.PaymentRefundRequest;
 import com.mediflow.clinic.billing.dto.PaymentResponse;
+import com.mediflow.clinic.billing.dto.PaymentSummaryResponse;
 import com.mediflow.clinic.billing.dto.ReceiptResponse;
 import com.mediflow.clinic.billing.entity.Invoice;
 import com.mediflow.clinic.billing.entity.InvoiceItem;
@@ -116,6 +117,30 @@ public class BillingService {
 		String normalizedSearch = search == null || search.isBlank() ? null : search.trim();
 		Specification<Payment> specification = paymentFilterSpec(normalizedSearch, method, from, to);
 		return paymentRepository.findAll(specification, pageable).map(billingMapper::toPaymentResponse);
+	}
+
+	@Transactional(readOnly = true)
+	public PaymentSummaryResponse summarizePayments(String search, PaymentMethod method, Instant from, Instant to) {
+		String normalizedSearch = search == null || search.isBlank() ? null : search.trim();
+		Specification<Payment> specification = paymentFilterSpec(normalizedSearch, method, from, to);
+		BigDecimal grossAmount = BigDecimal.ZERO;
+		BigDecimal refundedAmount = BigDecimal.ZERO;
+		BigDecimal netAmount = BigDecimal.ZERO;
+		long paymentCount = 0;
+
+		for (Payment payment : paymentRepository.findAll(specification)) {
+			grossAmount = grossAmount.add(payment.getAmount());
+			refundedAmount = refundedAmount.add(payment.getRefundedAmount());
+			netAmount = netAmount.add(payment.getNetAmount());
+			paymentCount++;
+		}
+
+		return new PaymentSummaryResponse(
+			billingMapper.money(grossAmount),
+			billingMapper.money(refundedAmount),
+			billingMapper.money(netAmount),
+			paymentCount
+		);
 	}
 
 	@Transactional
