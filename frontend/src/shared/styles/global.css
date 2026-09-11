@@ -6438,3 +6438,91 @@ button,
   }
 }
 
+/* iPadOS/iOS WebKit composites large animated backdrop filters in independent
+   tiles while scrolling. Keep the color motion on two viewport-sized opacity
+   layers and render glass surfaces without live background sampling. */
+@keyframes iosPastelCrossfade {
+  0%, 100% { opacity: 0.28; }
+  50% { opacity: 0.9; }
+}
+
+html[data-ios-webkit='true'],
+html[data-ios-webkit='true'] body {
+  background: #c7d9ee;
+}
+
+html[data-ios-webkit='true'] .app-shell,
+html[data-ios-webkit='true'] .auth-page {
+  isolation: isolate;
+  background: transparent;
+  animation: none !important;
+}
+
+html[data-ios-webkit='true'] .app-shell::before,
+html[data-ios-webkit='true'] .auth-page::before,
+html[data-ios-webkit='true'] .app-shell::after,
+html[data-ios-webkit='true'] .auth-page::after {
+  position: fixed;
+  inset: 0;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: opacity;
+  mix-blend-mode: normal;
+}
+
+html[data-ios-webkit='true'] .app-shell::before,
+html[data-ios-webkit='true'] .auth-page::before {
+  background: linear-gradient(145deg, #f1d7d0 0%, #dbe7bd 48%, #bcdde7 100%);
+  animation: iosPastelCrossfade 18s ease-in-out infinite;
+}
+
+html[data-ios-webkit='true'] .app-shell::after,
+html[data-ios-webkit='true'] .auth-page::after {
+  background: linear-gradient(145deg, #c3d9f2 0%, #d6c8ef 52%, #efcddd 100%);
+  animation: iosPastelCrossfade 18s ease-in-out -9s infinite reverse;
+}
+
+html[data-ios-webkit='true'] .liquid-glass-filters {
+  display: none;
+}
+
+html[data-ios-webkit='true'] .app-shell *,
+html[data-ios-webkit='true'] .auth-page * {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html[data-ios-webkit='true'] .app-shell *::before,
+html[data-ios-webkit='true'] .app-shell *::after,
+html[data-ios-webkit='true'] .auth-page *::before,
+html[data-ios-webkit='true'] .auth-page *::after {
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+
+html[data-ios-webkit='true'] .mediflex-shell,
+html[data-ios-webkit='true'] .app-shell [class$='-card'],
+html[data-ios-webkit='true'] .app-shell [class$='-panel'],
+html[data-ios-webkit='true'] .app-shell .panel,
+html[data-ios-webkit='true'] .auth-card,
+html[data-ios-webkit='true'] .staff-claim-panel {
+  background-color: rgba(244, 248, 252, 0.56) !important;
+  box-shadow:
+    0 12px 30px rgba(28, 45, 64, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+}
+
+html[data-ios-webkit='true'] .mediflex-shell,
+html[data-ios-webkit='true'] .nav-list {
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-ios-webkit='true'] .app-shell::before,
+  html[data-ios-webkit='true'] .auth-page::before,
+  html[data-ios-webkit='true'] .app-shell::after,
+  html[data-ios-webkit='true'] .auth-page::after {
+    animation: none;
+  }
+}
+
