@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   Activity,
@@ -74,7 +74,7 @@ export function PatientsPage() {
   const [notice, setNotice] = useState<string | null>(null)
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setDebouncedSearch(search.trim()), 250)
+    const timeout = window.setTimeout(() => setDebouncedSearch(search.trim()), 150)
     return () => window.clearTimeout(timeout)
   }, [search])
 
@@ -83,7 +83,10 @@ export function PatientsPage() {
     queryFn: ({ pageParam, signal }) => patientApi.listCursor(debouncedSearch, pageParam, signal),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    placeholderData: keepPreviousData,
   })
+  const isSearchChanging = search.trim() !== debouncedSearch
+  const isShowingPreviousResults = isSearchChanging || patientList.isPlaceholderData
   const patients = useMemo(
     () => patientList.data?.pages.flatMap((page) => page.items) ?? [],
     [patientList.data],
@@ -105,16 +108,22 @@ export function PatientsPage() {
   const virtualRows = rowVirtualizer.getVirtualItems()
 
   useEffect(() => {
+    listRef.current?.scrollTo({ top: 0 })
+  }, [debouncedSearch])
+
+  useEffect(() => {
     const lastRow = virtualRows.at(-1)
     if (
       lastRow
       && lastRow.index >= patients.length - 8
       && patientList.hasNextPage
       && !patientList.isFetchingNextPage
+      && !patientList.isFetching
+      && !isShowingPreviousResults
     ) {
       void patientList.fetchNextPage()
     }
-  }, [patientList, patients.length, virtualRows])
+  }, [patientList, patients.length, virtualRows, isShowingPreviousResults])
 
   useEffect(() => {
     if (selectedPatient) {
@@ -239,12 +248,23 @@ export function PatientsPage() {
             <Search size={17} aria-hidden="true" />
             <input
               placeholder="Search code, name, phone, or email..."
+              aria-label="Search patients"
+              aria-describedby="patient-search-status"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
           </label>
 
-          <div className="patient-table">
+          <p id="patient-search-status" role="status" aria-live="polite">
+            {isShowingPreviousResults
+              ? 'Searching… Previous results are shown until the search finishes.'
+              : patientList.isFetching && !patientList.isFetchingNextPage
+                ? 'Updating patient records…'
+                : patientList.isError
+                  ? 'Search could not be completed. Please try again.'
+                  : 'Search by patient code, name, phone, or email.'}
+          </p>
+          <div className="patient-table" aria-busy={patientList.isFetching || isSearchChanging}>
             <div className="patient-table-row patient-table-head">
               <span>Code</span>
               <span>Patient</span>
@@ -266,6 +286,7 @@ export function PatientsPage() {
                         className={selectedPatientId === patient.id ? 'patient-table-row active' : 'patient-table-row'}
                         key={patient.id}
                         onClick={() => selectPatient(patient)}
+                        disabled={isShowingPreviousResults}
                         style={{ transform: `translateY(${virtualRow.start}px)` }}
                         type="button"
                       >
