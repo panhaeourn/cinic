@@ -6542,3 +6542,160 @@ html[data-ios-webkit='true'] .mediflex-shell::before {
   }
 }
 
+
+/* Consistent breathing room for administration and reporting workspaces. */
+.access-page,
+.reports-page {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.access-page > .page-header,
+.reports-page > .page-header,
+.access-page > .access-command-row,
+.reports-page > .billing-command-row,
+.reports-page > .report-filter-panel,
+.reports-page > .reports-kpi-grid {
+  margin: 0;
+}
+
+.access-page .access-workspace,
+.reports-page .reports-workspace,
+.reports-page .reports-kpi-grid {
+  gap: 20px;
+}
+
+.access-page :is(.access-list-card, .access-detail-card, .access-permissions-card) {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  min-width: 0;
+}
+
+.access-page :is(.panel-heading, .account-control-grid, .password-reset-row),
+.access-page .access-detail-card > .primary-action {
+  margin: 0;
+}
+
+.access-page .access-table-row {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  gap: 16px;
+  padding: 14px;
+  border-radius: 14px;
+}
+
+.access-page .access-table-row > span:first-child,
+.access-page .role-check-grid label > span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.access-page .access-table-row :is(strong, small, span),
+.access-page .role-check-grid strong {
+  overflow-wrap: anywhere;
+}
+
+.access-page .access-table-row small,
+.access-page .role-check-grid small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.access-page .role-check-grid label {
+  align-items: center;
+  gap: 14px;
+  padding: 15px 16px;
+  border: 1px solid var(--glass-border-soft);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.access-page .role-check-grid input {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: var(--color-brand-700);
+}
+
+.reports-page .report-filter-panel {
+  border-radius: 22px;
+  padding: 18px;
+}
+
+.reports-page .report-filter-panel > * {
+  min-width: 0;
+}
+
+.reports-page .reports-kpi-grid article {
+  border-radius: 22px;
+  padding: 22px;
+  gap: 10px;
+}
+
+.reports-page .reports-workspace > article {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .access-page,
+  .reports-page {
+    gap: 20px;
+  }
+
+  .access-page .access-table-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .access-page .access-table-row > span:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .access-page .access-table-head {
+    display: none;
+  }
+}
+
+.reports-page .reports-workspace > article {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.reports-page .reports-workspace .panel-heading {
+  margin: 0;
+}
+
+.access-page > .access-command-row,
+.reports-page > .billing-command-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (min-width: 641px) and (max-width: 1200px) {
+  .access-page > .access-command-row,
+  .reports-page > .billing-command-row,
+  .reports-page > .reports-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reports-page .report-filter-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reports-page .report-filter-panel > .patient-search,
+  .reports-page .report-period-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .access-page > .access-command-row,
+  .reports-page > .billing-command-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
