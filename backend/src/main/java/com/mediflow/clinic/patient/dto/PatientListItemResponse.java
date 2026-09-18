@@ -10,6 +10,7 @@ public record PatientListItemResponse(
 	UUID id,
 	String patientCode,
 	String fullName,
+	String khmerName,
 	Gender gender,
 	LocalDate dateOfBirth,
 	String phone,

@@ -22,6 +22,9 @@ public record PatientUpdateRequest(
 	@Size(max = 80, message = "Last name must be 80 characters or fewer.")
 	String lastName,
 
+	@Size(max = 160, message = "Khmer name must be 160 characters or fewer.")
+	String khmerName,
+
 	@NotNull(message = "Gender is required.")
 	Gender gender,
 

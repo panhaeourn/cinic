@@ -21,6 +21,7 @@ public interface PatientRepository extends JpaRepository<Patient, UUID>, JpaSpec
 			p.id as id,
 			p.patient_code as patientCode,
 			p.first_name || ' ' || p.last_name as fullName,
+			p.khmer_name as khmerName,
 			p.gender as gender,
 			p.date_of_birth as dateOfBirth,
 			p.phone as phone,
@@ -33,6 +34,7 @@ public interface PatientRepository extends JpaRepository<Patient, UUID>, JpaSpec
 			or lower(
 				p.patient_code || ' ' || p.first_name || ' ' || p.last_name || ' ' || p.phone || ' ' || coalesce(p.email, '')
 			) like '%' || lower(cast(:search as text)) || '%'
+			or lower(p.khmer_name) like '%' || lower(cast(:search as text)) || '%'
 		)
 		and (p.created_at, p.id) < (
 			coalesce(cast(:cursorCreatedAt as timestamptz), 'infinity'::timestamptz),
@@ -52,6 +54,7 @@ public interface PatientRepository extends JpaRepository<Patient, UUID>, JpaSpec
 		UUID getId();
 		String getPatientCode();
 		String getFullName();
+		String getKhmerName();
 		String getGender();
 		LocalDate getDateOfBirth();
 		String getPhone();

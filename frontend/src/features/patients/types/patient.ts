@@ -7,6 +7,7 @@ export type Patient = {
   firstName: string
   lastName: string
   fullName: string
+  khmerName: string | null
   gender: Gender
   dateOfBirth: string
   phone: string
@@ -21,6 +22,7 @@ export type Patient = {
 }
 
 export type PatientPayload = {
+  khmerName?: string
   firstName: string
   lastName: string
   gender: Gender
@@ -36,7 +38,7 @@ export type PatientPayload = {
 
 export type PatientListItem = Pick<
   Patient,
-  'id' | 'patientCode' | 'fullName' | 'gender' | 'dateOfBirth' | 'phone' | 'email' | 'bloodType' | 'createdAt'
+  'id' | 'patientCode' | 'fullName' | 'khmerName' | 'gender' | 'dateOfBirth' | 'phone' | 'email' | 'bloodType' | 'createdAt'
 >
 
 export type CursorPage<T> = {

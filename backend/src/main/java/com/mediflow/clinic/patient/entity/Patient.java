@@ -39,6 +39,9 @@ public class Patient {
 	@Column(nullable = false, length = 80)
 	private String lastName;
 
+	@Column(name = "khmer_name", length = 160)
+	private String khmerName;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
 	private Gender gender;
@@ -104,6 +107,14 @@ public class Patient {
 
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
+	}
+
+	public String getKhmerName() {
+		return khmerName;
+	}
+
+	public void setKhmerName(String khmerName) {
+		this.khmerName = khmerName;
 	}
 
 	public String getLastName() {

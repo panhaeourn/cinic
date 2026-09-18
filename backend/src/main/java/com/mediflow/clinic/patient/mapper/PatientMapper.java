@@ -21,6 +21,7 @@ public class PatientMapper {
 		patient.setUser(user);
 		patient.setFirstName(request.firstName().trim());
 		patient.setLastName(request.lastName().trim());
+		patient.setKhmerName(normalizeOptional(request.khmerName()));
 		patient.setGender(request.gender());
 		patient.setDateOfBirth(request.dateOfBirth());
 		patient.setPhone(request.phone().trim());
@@ -40,6 +41,7 @@ public class PatientMapper {
 			patient.getFirstName(),
 			patient.getLastName(),
 			patient.getFirstName() + " " + patient.getLastName(),
+			patient.getKhmerName(),
 			patient.getGender(),
 			patient.getDateOfBirth(),
 			patient.getPhone(),
@@ -58,6 +60,7 @@ public class PatientMapper {
 		patient.setUser(user);
 		patient.setFirstName(request.firstName().trim());
 		patient.setLastName(request.lastName().trim());
+		patient.setKhmerName(normalizeOptional(request.khmerName()));
 		patient.setGender(request.gender());
 		patient.setDateOfBirth(request.dateOfBirth());
 		patient.setPhone(request.phone().trim());

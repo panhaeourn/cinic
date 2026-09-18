@@ -115,6 +115,7 @@ public class PatientService {
 				criteriaBuilder.like(criteriaBuilder.lower(root.get("patientCode")), pattern),
 				criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), pattern),
 				criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), pattern),
+				criteriaBuilder.like(criteriaBuilder.lower(root.get("khmerName")), pattern),
 				criteriaBuilder.like(criteriaBuilder.lower(root.get("phone")), pattern),
 				criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), pattern)
 			);
@@ -126,6 +127,7 @@ public class PatientService {
 			row.getId(),
 			row.getPatientCode(),
 			row.getFullName(),
+			row.getKhmerName(),
 			Gender.valueOf(row.getGender()),
 			row.getDateOfBirth(),
 			row.getPhone(),

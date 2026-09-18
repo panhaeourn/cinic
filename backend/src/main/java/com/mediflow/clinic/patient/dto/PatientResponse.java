@@ -13,6 +13,7 @@ public record PatientResponse(
 	String firstName,
 	String lastName,
 	String fullName,
+	String khmerName,
 	Gender gender,
 	LocalDate dateOfBirth,
 	String phone,

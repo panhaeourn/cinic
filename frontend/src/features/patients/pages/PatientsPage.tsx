@@ -22,6 +22,7 @@ import type { Gender, Patient, PatientListItem, PatientPayload } from '../types/
 const emptyForm: PatientPayload = {
   firstName: '',
   lastName: '',
+  khmerName: '',
   gender: 'MALE',
   dateOfBirth: '',
   phone: '',
@@ -37,6 +38,7 @@ function toPatientForm(patient: Patient): PatientPayload {
   return {
     firstName: patient.firstName,
     lastName: patient.lastName,
+    khmerName: patient.khmerName ?? '',
     gender: patient.gender,
     dateOfBirth: patient.dateOfBirth,
     phone: patient.phone,
@@ -186,7 +188,7 @@ export function PatientsPage() {
   }
 
   return (
-    <section className="patients-page">
+    <section className="patients-page patient-registry-page">
       <header className="page-header">
         <div>
           <span className="eyebrow">People and setup</span>
@@ -293,7 +295,7 @@ export function PatientsPage() {
                         <strong>{patient.patientCode}</strong>
                         <span>
                           {patient.fullName}
-                          <small>{patient.email ?? 'No email'}</small>
+                          <small lang={patient.khmerName ? 'km' : undefined}>{patient.khmerName || patient.email || 'No email'}</small>
                         </span>
                         <span>{patient.gender}</span>
                         <span>{patient.phone}</span>
@@ -318,6 +320,7 @@ export function PatientsPage() {
               <div>
                 <span className="eyebrow">Patient profile</span>
                 <h2>{selectedPatient.fullName}</h2>
+                {selectedPatient.khmerName && <p className="patient-khmer-name" lang="km">{selectedPatient.khmerName}</p>}
               </div>
               <div className="patient-profile-grid">
                 <div>
@@ -364,6 +367,10 @@ export function PatientsPage() {
                 <label>
                   <span>Last name</span>
                   <input required value={form.lastName} onChange={(event) => updateField('lastName', event.target.value)} />
+                </label>
+                <label>
+                  <span>Khmer name / ឈ្មោះជាភាសាខ្មែរ (optional)</span>
+                  <input lang="km" maxLength={160} value={form.khmerName ?? ''} onChange={(event) => updateField('khmerName', event.target.value)} />
                 </label>
                 <label>
                   <span>Gender</span>

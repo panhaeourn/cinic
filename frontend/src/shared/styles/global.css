@@ -6699,3 +6699,41 @@ html[data-ios-webkit='true'] .mediflex-shell::before {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Native iOS typography without additional font downloads. */
+.patient-registry-page {
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, "Leelawadee UI", sans-serif;
+}
+.patient-registry-page [lang="km"] {
+  font-family: "Khmer Sangam MN", "Leelawadee UI", "Noto Sans Khmer", system-ui, sans-serif;
+  letter-spacing: normal;
+  line-height: 1.6;
+}
+.patient-registry-page .patient-khmer-name {
+  margin: 6px 0 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+/* Keep virtual rows at their measured height on narrow screens. */
+.patient-registry-page .patient-table {
+  display: block;
+  overflow-x: auto;
+}
+.patient-registry-page .patient-table-scroll,
+.patient-registry-page .patient-table-head {
+  min-width: 668px;
+}
+.patient-registry-page .patient-table-head {
+  margin-bottom: 8px;
+}
+.patient-registry-page .patient-table-row {
+  grid-template-columns: 116px minmax(180px, 1fr) 94px 130px 72px;
+}
+.patient-registry-page .patient-table-row > span,
+.patient-registry-page .patient-table-row small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
