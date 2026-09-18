@@ -28,6 +28,10 @@
   --pastel-8: #b3b3e5;
   --pastel-9: #d1b3e5;
   --pastel-10: #e5b3ce;
+  --pastel-11: #eee1cb; /* champagne */
+  --pastel-12: #ecd2d6; /* dusty rose */
+  --pastel-13: #c5d9ed; /* powder blue */
+  --pastel-14: #d3e4d2; /* soft sage */
   --pastel-1-rgb: 229 209 179;
   --pastel-2-rgb: 229 190 179;
   --pastel-3-rgb: 221 229 179;
@@ -234,7 +238,8 @@ button {
   scroll-padding-inline: 12px;
   scrollbar-width: none;
   cursor: grab;
-  touch-action: pan-y;
+  /* Let Safari handle touch swipes and momentum; mouse drag stays in React. */
+  touch-action: pan-x pan-y pinch-zoom;
   will-change: scroll-position;
   -webkit-overflow-scrolling: touch;
 }
@@ -3905,15 +3910,19 @@ button,
 
 @keyframes clinicPastelBackground {
   0% { background-color: var(--pastel-1); }
-  10% { background-color: var(--pastel-2); }
-  20% { background-color: var(--pastel-3); }
-  30% { background-color: var(--pastel-4); }
-  40% { background-color: var(--pastel-5); }
-  50% { background-color: var(--pastel-6); }
-  60% { background-color: var(--pastel-7); }
-  70% { background-color: var(--pastel-8); }
-  80% { background-color: var(--pastel-9); }
-  90% { background-color: var(--pastel-10); }
+  7.1429% { background-color: var(--pastel-11); }
+  14.2857% { background-color: var(--pastel-2); }
+  21.4286% { background-color: var(--pastel-12); }
+  28.5714% { background-color: var(--pastel-10); }
+  35.7143% { background-color: var(--pastel-9); }
+  42.8571% { background-color: var(--pastel-8); }
+  50% { background-color: var(--pastel-13); }
+  57.1429% { background-color: var(--pastel-7); }
+  64.2857% { background-color: var(--pastel-6); }
+  71.4286% { background-color: var(--pastel-5); }
+  78.5714% { background-color: var(--pastel-14); }
+  85.7143% { background-color: var(--pastel-4); }
+  92.8571% { background-color: var(--pastel-3); }
   100% { background-color: var(--pastel-1); }
 }
 

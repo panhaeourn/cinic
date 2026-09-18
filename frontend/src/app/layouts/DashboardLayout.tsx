@@ -78,6 +78,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   function handleNavPointerDown(event: ReactPointerEvent<HTMLElement>) {
+    // Native touch scrolling preserves Safari momentum and avoids capture/cancel
+    // races when a swipe starts on a link. Keep custom dragging for a mouse.
+    if (event.pointerType !== 'mouse') {
+      resetNavDrag(true)
+      return
+    }
     const nav = navRef.current
     if (!nav || nav.scrollWidth <= nav.clientWidth || (event.pointerType === 'mouse' && event.button !== 0)) {
       return
