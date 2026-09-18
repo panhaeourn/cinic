@@ -6438,17 +6438,31 @@ button,
   }
 }
 
-/* iPadOS/iOS WebKit composites large animated backdrop filters in independent
-   tiles while scrolling. Keep the color motion on two viewport-sized opacity
-   layers and render glass surfaces without live background sampling. */
-@keyframes iosPastelCrossfade {
-  0%, 100% { opacity: 0.28; }
-  50% { opacity: 0.9; }
-}
+/* Keep the desktop palette/timing on iOS, but limit animated painting to one
+   viewport-sized sibling of the scrolling UI. No ancestor glass blur samples
+   this layer, and route changes do not restart its animation. */
 
 html[data-ios-webkit='true'],
 html[data-ios-webkit='true'] body {
-  background: #c7d9ee;
+  background: var(--theme-bg-start);
+}
+
+html[data-ios-webkit='true'] #app {
+  position: relative;
+  isolation: isolate;
+}
+
+.ios-pastel-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  contain: strict;
+  transform: translateZ(0);
+  background-color: var(--theme-bg-start);
+  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.18), transparent 65%);
+  animation: clinicPastelBackground var(--theme-bg-duration) ease-in-out infinite;
+  animation-delay: var(--theme-bg-delay);
 }
 
 html[data-ios-webkit='true'] .app-shell,
@@ -6462,24 +6476,8 @@ html[data-ios-webkit='true'] .app-shell::before,
 html[data-ios-webkit='true'] .auth-page::before,
 html[data-ios-webkit='true'] .app-shell::after,
 html[data-ios-webkit='true'] .auth-page::after {
-  position: fixed;
-  inset: 0;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: opacity;
-  mix-blend-mode: normal;
-}
-
-html[data-ios-webkit='true'] .app-shell::before,
-html[data-ios-webkit='true'] .auth-page::before {
-  background: linear-gradient(145deg, #f1d7d0 0%, #dbe7bd 48%, #bcdde7 100%);
-  animation: iosPastelCrossfade 18s ease-in-out infinite;
-}
-
-html[data-ios-webkit='true'] .app-shell::after,
-html[data-ios-webkit='true'] .auth-page::after {
-  background: linear-gradient(145deg, #c3d9f2 0%, #d6c8ef 52%, #efcddd 100%);
-  animation: iosPastelCrossfade 18s ease-in-out -9s infinite reverse;
+  content: none;
+  animation: none;
 }
 
 html[data-ios-webkit='true'] .liquid-glass-filters {
@@ -6496,6 +6494,8 @@ html[data-ios-webkit='true'] .app-shell *::before,
 html[data-ios-webkit='true'] .app-shell *::after,
 html[data-ios-webkit='true'] .auth-page *::before,
 html[data-ios-webkit='true'] .auth-page *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
   filter: none !important;
   mix-blend-mode: normal !important;
 }
@@ -6506,7 +6506,7 @@ html[data-ios-webkit='true'] .app-shell [class$='-panel'],
 html[data-ios-webkit='true'] .app-shell .panel,
 html[data-ios-webkit='true'] .auth-card,
 html[data-ios-webkit='true'] .staff-claim-panel {
-  background-color: rgba(244, 248, 252, 0.56) !important;
+  background-color: rgba(244, 248, 252, 0.24) !important;
   box-shadow:
     0 12px 30px rgba(28, 45, 64, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
@@ -6517,11 +6517,18 @@ html[data-ios-webkit='true'] .nav-list {
   will-change: auto;
 }
 
+html[data-ios-webkit='true'] .mediflex-shell {
+  animation: none;
+  background: rgba(244, 248, 252, 0.1);
+  background-color: rgba(244, 248, 252, 0.1) !important;
+}
+
+html[data-ios-webkit='true'] .mediflex-shell::before {
+  content: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  html[data-ios-webkit='true'] .app-shell::before,
-  html[data-ios-webkit='true'] .auth-page::before,
-  html[data-ios-webkit='true'] .app-shell::after,
-  html[data-ios-webkit='true'] .auth-page::after {
+  .ios-pastel-background {
     animation: none;
   }
 }

@@ -18,6 +18,7 @@ if (isIosWebKit) {
 createRoot(document.getElementById('app')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
+      {isIosWebKit && <div className="ios-pastel-background" aria-hidden="true" />}
       <App />
     </QueryClientProvider>
   </StrictMode>,
