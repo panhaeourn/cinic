@@ -1,3 +1,4 @@
+import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { CheckCircle2, FileClock, Search, Stethoscope, UserRound, ClipboardPlus } from 'lucide-react'
@@ -39,6 +40,7 @@ export function EncountersPage() {
   const [staff, setStaff] = useState<Staff[]>([])
   const [form, setForm] = useState<EncounterPayload>(emptyForm)
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search.trim())
   const [status, setStatus] = useState<EncounterStatus | ''>('')
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -51,7 +53,7 @@ export function EncountersPage() {
   const activeCount = useMemo(() => encounters.filter((encounter) => encounter.status === 'IN_PROGRESS').length, [encounters])
 
   async function loadEncounters() {
-    const page = await encounterApi.list({ search, status })
+    const page = await encounterApi.list({ search: debouncedSearch, status })
     setEncounters(page.content)
   }
 
@@ -61,7 +63,7 @@ export function EncountersPage() {
     setError(null)
 
     Promise.all([
-      encounterApi.list({ search, status }),
+      encounterApi.list({ search: debouncedSearch, status }),
       patientApi.list(''),
       queueApi.list({ date: new Date().toISOString().slice(0, 10) }),
       staffApi.list(''),
@@ -84,7 +86,7 @@ export function EncountersPage() {
     return () => {
       ignore = true
     }
-  }, [search, status])
+  }, [debouncedSearch, status])
 
   function updateField(field: keyof EncounterPayload, value: string) {
     setForm((current) => ({ ...current, [field]: value }))

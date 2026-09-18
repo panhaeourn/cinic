@@ -16,12 +16,12 @@ function cleanPayload<T extends Record<string, unknown>>(payload: T) {
 }
 
 export const queueApi = {
-  list(filters: QueueFilters = {}) {
+  list(filters: QueueFilters = {}, signal?: AbortSignal) {
     const query = new URLSearchParams({ size: '60', sort: 'checkedInAt,asc' })
     if (filters.search?.trim()) query.set('search', filters.search.trim())
     if (filters.status) query.set('status', filters.status)
     if (filters.date) query.set('date', filters.date)
-    return apiRequest<PageResponse<QueueTicket>>(`/queue?${query.toString()}`)
+    return apiRequest<PageResponse<QueueTicket>>(`/queue?${query.toString()}`, { signal })
   },
   checkIn(payload: QueueCheckInPayload) {
     return apiRequest<QueueTicket>('/queue/check-in', {

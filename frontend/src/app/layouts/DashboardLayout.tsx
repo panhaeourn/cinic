@@ -1,3 +1,4 @@
+import { prefetchRoute } from '../routeLoaders'
 import {
   Activity,
   Bell,
@@ -8,7 +9,7 @@ import {
   Settings,
 } from 'lucide-react'
 import type { FormEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode, WheelEvent } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../../features/auth/components/AuthContext'
@@ -274,6 +275,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     key={item.label}
                     to={item.path}
                     title={item.label}
+                    onPointerEnter={() => prefetchRoute(item.path)}
+                    onFocus={() => prefetchRoute(item.path)}
+                    onTouchStart={() => prefetchRoute(item.path)}
                     draggable={false}
                     onDragStart={(event) => event.preventDefault()}
                   >
@@ -315,7 +319,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </header>
 
-        <main className="main-surface">{children}</main>
+        <main className="main-surface"><Suspense fallback={<div className="route-loading" role="status">Loading workspace…</div>}>{children}</Suspense></main>
       </div>
     </div>
   )

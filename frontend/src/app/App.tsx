@@ -1,3 +1,4 @@
+import { loadLoginPage, loadOAuthCallbackPage, loadRegisterPage, loadAccessControlPage, loadAuditLogsPage, loadAppointmentsPage, loadBillingPage, loadCertificateFormPage, loadPaymentsPage, loadDashboardPage, loadDepartmentsPage, loadEncountersPage, loadPatientsPage, loadQueuePage, loadReportsPage, loadSettingsPage, loadStaffClaimPage, loadStaffPage, loadVitalsPage } from './routeLoaders'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 
@@ -8,25 +9,25 @@ import { ClinicBrandProvider } from '../shared/clinic/clinicBrand'
 import { DashboardLayout } from './layouts/DashboardLayout'
 import { routeRoles } from './layouts/navigation'
 
-const LoginPage = lazy(() => import('../features/auth/pages/LoginPage').then((module) => ({ default: module.LoginPage })))
-const OAuthCallbackPage = lazy(() => import('../features/auth/pages/OAuthCallbackPage').then((module) => ({ default: module.OAuthCallbackPage })))
-const RegisterPage = lazy(() => import('../features/auth/pages/RegisterPage').then((module) => ({ default: module.RegisterPage })))
-const AccessControlPage = lazy(() => import('../features/access/pages/AccessControlPage').then((module) => ({ default: module.AccessControlPage })))
-const AuditLogsPage = lazy(() => import('../features/access/pages/AuditLogsPage').then((module) => ({ default: module.AuditLogsPage })))
-const AppointmentsPage = lazy(() => import('../features/appointments/pages/AppointmentsPage').then((module) => ({ default: module.AppointmentsPage })))
-const BillingPage = lazy(() => import('../features/billing/pages/BillingPage').then((module) => ({ default: module.BillingPage })))
-const CertificateFormPage = lazy(() => import('../features/certificates/pages/CertificateFormPage').then((module) => ({ default: module.CertificateFormPage })))
-const PaymentsPage = lazy(() => import('../features/billing/pages/PaymentsPage').then((module) => ({ default: module.PaymentsPage })))
-const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage').then((module) => ({ default: module.DashboardPage })))
-const DepartmentsPage = lazy(() => import('../features/departments/pages/DepartmentsPage').then((module) => ({ default: module.DepartmentsPage })))
-const EncountersPage = lazy(() => import('../features/encounters/pages/EncountersPage').then((module) => ({ default: module.EncountersPage })))
-const PatientsPage = lazy(() => import('../features/patients/pages/PatientsPage').then((module) => ({ default: module.PatientsPage })))
-const QueuePage = lazy(() => import('../features/queue/pages/QueuePage').then((module) => ({ default: module.QueuePage })))
-const ReportsPage = lazy(() => import('../features/reports/pages/ReportsPage').then((module) => ({ default: module.ReportsPage })))
-const SettingsPage = lazy(() => import('../features/settings/pages/SettingsPage').then((module) => ({ default: module.SettingsPage })))
-const StaffClaimPage = lazy(() => import('../features/staff/pages/StaffClaimPage').then((module) => ({ default: module.StaffClaimPage })))
-const StaffPage = lazy(() => import('../features/staff/pages/StaffPage').then((module) => ({ default: module.StaffPage })))
-const VitalsPage = lazy(() => import('../features/vitals/pages/VitalsPage').then((module) => ({ default: module.VitalsPage })))
+const LoginPage = lazy(loadLoginPage)
+const OAuthCallbackPage = lazy(loadOAuthCallbackPage)
+const RegisterPage = lazy(loadRegisterPage)
+const AccessControlPage = lazy(loadAccessControlPage)
+const AuditLogsPage = lazy(loadAuditLogsPage)
+const AppointmentsPage = lazy(loadAppointmentsPage)
+const BillingPage = lazy(loadBillingPage)
+const CertificateFormPage = lazy(loadCertificateFormPage)
+const PaymentsPage = lazy(loadPaymentsPage)
+const DashboardPage = lazy(loadDashboardPage)
+const DepartmentsPage = lazy(loadDepartmentsPage)
+const EncountersPage = lazy(loadEncountersPage)
+const PatientsPage = lazy(loadPatientsPage)
+const QueuePage = lazy(loadQueuePage)
+const ReportsPage = lazy(loadReportsPage)
+const SettingsPage = lazy(loadSettingsPage)
+const StaffClaimPage = lazy(loadStaffClaimPage)
+const StaffPage = lazy(loadStaffPage)
+const VitalsPage = lazy(loadVitalsPage)
 
 function LiquidGlassFilters() {
   return (

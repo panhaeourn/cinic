@@ -1,3 +1,4 @@
+import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
 import { useEffect, useMemo, useState } from 'react'
 import { KeyRound, Lock, Search, ShieldCheck, UserCog, UsersRound } from 'lucide-react'
 
@@ -11,6 +12,7 @@ export function AccessControlPage() {
   const [selectedUser, setSelectedUser] = useState<UserAccess | null>(null)
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search.trim())
   const [temporaryPassword, setTemporaryPassword] = useState('')
   const [totalElements, setTotalElements] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +41,7 @@ export function AccessControlPage() {
   useEffect(() => {
     let ignore = false
     setIsLoading(true)
-    accessControlApi.users(search).then((page) => {
+    accessControlApi.users(debouncedSearch).then((page) => {
       if (!ignore) {
         setUsers(page.content)
         setTotalElements(page.totalElements)
@@ -56,7 +58,7 @@ export function AccessControlPage() {
     return () => {
       ignore = true
     }
-  }, [search])
+  }, [debouncedSearch])
 
   useEffect(() => {
     if (isLoading || users.length === 0) {
@@ -85,7 +87,7 @@ export function AccessControlPage() {
   async function refreshUser(user: UserAccess) {
     setSelectedUser(user)
     setSelectedRoles(user.roles)
-    const page = await accessControlApi.users(search)
+    const page = await accessControlApi.users(debouncedSearch)
     setUsers(page.content)
     setTotalElements(page.totalElements)
   }

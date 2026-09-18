@@ -1,3 +1,4 @@
+import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { BadgeCheck, Building2, KeyRound, MailCheck, Search, ShieldCheck, Trash2, UserPlus, UsersRound } from 'lucide-react'
@@ -71,6 +72,7 @@ export function StaffPage() {
   const [departments, setDepartments] = useState<Department[]>([])
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null)
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search.trim())
   const [totalElements, setTotalElements] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -109,7 +111,7 @@ export function StaffPage() {
     setIsLoading(true)
     setError(null)
     staffApi
-      .list(search)
+      .list(debouncedSearch)
       .then((page) => {
         if (!ignore) {
           setStaff(page.content)
@@ -130,7 +132,7 @@ export function StaffPage() {
     return () => {
       ignore = true
     }
-  }, [search])
+  }, [debouncedSearch])
 
   function updateField(field: keyof StaffPayload, value: string) {
     setForm((current) => {
@@ -172,7 +174,7 @@ export function StaffPage() {
   }
 
   async function refreshStaff(nextSelected?: Staff) {
-    const page = await staffApi.list(search)
+    const page = await staffApi.list(debouncedSearch)
     setStaff(page.content)
     setTotalElements(page.totalElements)
     if (nextSelected) {

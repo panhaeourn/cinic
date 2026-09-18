@@ -1,3 +1,4 @@
+import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { CalendarClock, CalendarPlus, CheckCircle2, Clock3, Search, UserCheck, XCircle } from 'lucide-react'
@@ -50,6 +51,7 @@ export function AppointmentsPage() {
   const [staff, setStaff] = useState<Staff[]>([])
   const [form, setForm] = useState<AppointmentPayload>(() => emptyForm())
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search.trim())
   const [status, setStatus] = useState<AppointmentStatus | ''>('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -66,7 +68,7 @@ export function AppointmentsPage() {
   }, [appointments])
 
   async function loadAppointments() {
-    const page = await appointmentApi.list({ search, status })
+    const page = await appointmentApi.list({ search: debouncedSearch, status })
     setAppointments(page.content)
   }
 
@@ -75,7 +77,7 @@ export function AppointmentsPage() {
     setIsLoading(true)
     setError(null)
 
-    Promise.all([appointmentApi.list({ search, status }), patientApi.list(''), staffApi.list('')])
+    Promise.all([appointmentApi.list({ search: debouncedSearch, status }), patientApi.list(''), staffApi.list('')])
       .then(([appointmentPage, patientPage, staffPage]) => {
         if (!ignore) {
           setAppointments(appointmentPage.content)
@@ -93,7 +95,7 @@ export function AppointmentsPage() {
     return () => {
       ignore = true
     }
-  }, [search, status])
+  }, [debouncedSearch, status])
 
   function updateField(field: keyof AppointmentPayload, value: string | number) {
     setForm((current) => ({ ...current, [field]: value }))

@@ -1,0 +1,33 @@
+/* Avoid filtering the entire scrolling workspace through nested glass layers.
+   Individual controls retain their existing glass and palette. */
+.app-shell .mediflex-shell {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  will-change: auto;
+}
+
+.app-shell .mediflex-shell::before {
+  filter: none !important;
+}
+
+/* Decorative refraction is expensive over large animated surfaces. */
+.app-shell :is(.metric-card, .panel, .hero-health-panel, .patient-list-card, .patient-form-card)::before,
+.app-shell :is(.metric-card, .panel, .hero-health-panel, .patient-list-card, .patient-form-card)::after {
+  filter: none !important;
+}
+
+.route-loading {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell, .auth-page, .app-shell::before, .app-shell::after,
+  .auth-page::before, .auth-page::after {
+    animation: none !important;
+  }
+  .app-shell *, .auth-page * {
+    scroll-behavior: auto !important;
+  }
+}

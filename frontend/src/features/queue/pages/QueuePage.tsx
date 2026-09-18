@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
 import type { FormEvent } from 'react'
 import { CheckCircle2, ClipboardList, PlayCircle, Search, SkipForward, UserRoundCheck, UsersRound, XCircle } from 'lucide-react'
 
 import { useAuth } from '../../auth/components/AuthContext'
 import { appointmentApi } from '../../appointments/services/appointmentApi'
-import type { Appointment } from '../../appointments/types/appointment'
 import { patientApi } from '../../patients/services/patientApi'
-import type { Patient } from '../../patients/types/patient'
 import { staffApi } from '../../staff/services/staffApi'
-import type { Staff } from '../../staff/types/staff'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { queueApi } from '../services/queueApi'
 import type { QueueCheckInPayload, QueueStatus, QueueTicket } from '../types/queue'
@@ -28,58 +27,48 @@ function statusTone(status: QueueStatus) {
 
 export function QueuePage() {
   const { user } = useAuth()
-  const [tickets, setTickets] = useState<QueueTicket[]>([])
-  const [patients, setPatients] = useState<Patient[]>([])
-  const [appointments, setAppointments] = useState<Appointment[]>([])
-  const [staff, setStaff] = useState<Staff[]>([])
+  const queryClient = useQueryClient()
   const [form, setForm] = useState<QueueCheckInPayload>({ patientId: '', appointmentId: '', assignedStaffId: '', priority: 0, notes: '' })
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<QueueStatus | ''>('')
   const [date, setDate] = useState(todayString())
-  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
-  const canManage = useMemo(() => user?.permissions.includes('QUEUE_MANAGE') ?? false, [user])
-  const activeStaff = useMemo(() => staff.filter((member) => member.status === 'ACTIVE'), [staff])
-  const waitingCount = useMemo(() => tickets.filter((ticket) => ticket.status === 'WAITING').length, [tickets])
+  const canManage = user?.permissions.includes('QUEUE_MANAGE') ?? false
+  const debouncedSearch = useDebouncedValue(search.trim())
+  const queue = useQuery({
+    queryKey: ['queue', { search: debouncedSearch, status, date }],
+    queryFn: ({ signal }) => queueApi.list({ search: debouncedSearch, status, date }, signal),
+    staleTime: 0,
+  })
+  const patientOptions = useQuery({
+    queryKey: ['patients', 'queue-options'],
+    queryFn: () => patientApi.list(''),
+    enabled: canManage,
+  })
+  const appointmentOptions = useQuery({
+    queryKey: ['appointments', 'queue-options'],
+    queryFn: () => appointmentApi.list({ status: 'SCHEDULED' }),
+    enabled: canManage,
+  })
+  const staffOptions = useQuery({
+    queryKey: ['staff', 'queue-options'],
+    queryFn: () => staffApi.list(''),
+    enabled: canManage,
+  })
+  const tickets = queue.data?.content ?? []
+  const patients = patientOptions.data?.content ?? []
+  const appointments = appointmentOptions.data?.content ?? []
+  const activeStaff = useMemo(() => staffOptions.data?.content.filter((member) => member.status === 'ACTIVE') ?? [], [staffOptions.data])
+  const waitingCount = tickets.filter((ticket) => ticket.status === 'WAITING').length
+  const isLoading = queue.isPending
+  const loadError = queue.error ?? patientOptions.error ?? appointmentOptions.error ?? staffOptions.error
 
   async function loadQueue() {
-    const page = await queueApi.list({ search, status, date })
-    setTickets(page.content)
+    await queryClient.invalidateQueries({ queryKey: ['queue'] })
   }
-
-  useEffect(() => {
-    let ignore = false
-    setIsLoading(true)
-    setError(null)
-
-    Promise.all([
-      queueApi.list({ search, status, date }),
-      patientApi.list(''),
-      appointmentApi.list({ status: 'SCHEDULED' }),
-      staffApi.list(''),
-    ])
-      .then(([queuePage, patientPage, appointmentPage, staffPage]) => {
-        if (!ignore) {
-          setTickets(queuePage.content)
-          setPatients(patientPage.content)
-          setAppointments(appointmentPage.content)
-          setStaff(staffPage.content)
-        }
-      })
-      .catch((caught: Error) => {
-        if (!ignore) setError(caught.message)
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false)
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [search, status, date])
 
   function updateField(field: keyof QueueCheckInPayload, value: string | number) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -159,7 +148,7 @@ export function QueuePage() {
         </article>
       </div>
 
-      {error ? <div className="form-alert">{error}</div> : null}
+      {error || loadError ? <div className="form-alert">{error ?? loadError?.message}</div> : null}
       {notice ? <div className="success-alert">{notice}</div> : null}
 
       <div className="patient-workspace">
@@ -185,7 +174,7 @@ export function QueuePage() {
             <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
           </div>
 
-          <div className="workflow-list">
+          <div className="workflow-list" aria-busy={queue.isFetching || search.trim() !== debouncedSearch}>
             {isLoading ? (
               <div className="patient-empty">Loading queue...</div>
             ) : tickets.length === 0 ? (

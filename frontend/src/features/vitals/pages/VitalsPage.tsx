@@ -1,3 +1,4 @@
+import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { HeartPulse, Ruler, Search, Stethoscope, Thermometer, UserRoundCheck } from 'lucide-react'
@@ -54,6 +55,7 @@ export function VitalsPage() {
   const [staff, setStaff] = useState<Staff[]>([])
   const [form, setForm] = useState<VitalsForm>(emptyForm)
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search.trim())
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -63,7 +65,7 @@ export function VitalsPage() {
   const nurses = useMemo(() => staff.filter((member) => member.staffType === 'NURSE' && member.status === 'ACTIVE'), [staff])
 
   async function loadVitals() {
-    const page = await vitalsApi.list(search)
+    const page = await vitalsApi.list(debouncedSearch)
     setVitals(page.content)
   }
 
@@ -72,7 +74,7 @@ export function VitalsPage() {
     setIsLoading(true)
     setError(null)
 
-    Promise.all([vitalsApi.list(search), patientApi.list(''), queueApi.list({ date: new Date().toISOString().slice(0, 10) }), staffApi.list('')])
+    Promise.all([vitalsApi.list(debouncedSearch), patientApi.list(''), queueApi.list({ date: new Date().toISOString().slice(0, 10) }), staffApi.list('')])
       .then(([vitalsPage, patientPage, queuePage, staffPage]) => {
         if (!ignore) {
           setVitals(vitalsPage.content)
@@ -91,7 +93,7 @@ export function VitalsPage() {
     return () => {
       ignore = true
     }
-  }, [search])
+  }, [debouncedSearch])
 
   function updateField(field: keyof VitalsForm, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
