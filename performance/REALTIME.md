@@ -13,6 +13,8 @@ All data-backed clinic routes use TanStack Query: Patients, Staff, Appointments,
 - The exact Nginx /api/events location disables buffering and extends the read timeout. Ordinary API buffering is unchanged.
 - Existing Bakong provider verification remains separate: SSE distributes clinic database changes, not provider payment confirmations.
 
+When EventSource fails, the client probes the HTTP status once. Missing or unauthorized endpoints pause retries for five minutes and show an availability notice. This prevents rapid 404 retries during a frontend/backend deployment mismatch. The stream resumes automatically after deployment; this fallback does not repair failed patient writes. Run `node performance/sse-availability.cjs` for the local missing-endpoint regression test.
+
 ## Deployment scope
 
 Deploy frontend and backend together. This broker serves the existing single-backend deployment; multiple replicas or external database writers need shared publish/subscribe and after-commit publishing from those writers. No database migration or new production dependency is required. The transport is invalidation, not an audit or durable event log.

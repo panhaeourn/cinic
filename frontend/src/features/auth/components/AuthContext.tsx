@@ -10,6 +10,7 @@ const sessionQueryKey = ['auth', 'session'] as const
 
 type AuthContextValue = {
   user: User | null
+  liveUpdatesUnavailable: boolean
   isAuthenticated: boolean
   isLoading: boolean
   login: (payload: LoginPayload) => Promise<AuthResponse>
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		staleTime: 5 * 60_000,
 	})
 	const user = session.data ?? null
-	useClinicEvents(user?.id)
+	const liveUpdatesUnavailable = useClinicEvents(user?.id)
 
   const persistSession = useCallback((response: AuthResponse) => {
 		queryClient.setQueryData(sessionQueryKey, response.user)
@@ -70,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       isAuthenticated: Boolean(user),
+      liveUpdatesUnavailable,
 		isLoading: session.isPending,
       login,
       register,
@@ -77,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       claimStaffCode,
       logout,
     }),
-		[claimStaffCode, completeGoogleLogin, login, logout, register, session.isPending, user],
+		[claimStaffCode, completeGoogleLogin, login, logout, register, session.isPending, user, liveUpdatesUnavailable],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

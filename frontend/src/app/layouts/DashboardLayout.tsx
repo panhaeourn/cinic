@@ -40,7 +40,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [workspaceSearch, setWorkspaceSearch] = useState('')
   const [searchNotice, setSearchNotice] = useState('')
   const [showNotifications, setShowNotifications] = useState(false)
-  const { logout, user } = useAuth()
+  const { logout, user, liveUpdatesUnavailable } = useAuth()
   const { brand } = useClinicBrand()
   const roles = user?.roles ?? []
   const visibleItems = getVisibleNavigationItems(roles)
@@ -325,6 +325,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </header>
 
+        {liveUpdatesUnavailable && <div className="form-alert" role="status">Live updates are unavailable from the server. Your work stays open; reconnection will be retried automatically.</div>}
         <main className="main-surface"><Suspense fallback={<div className="route-loading" role="status">Loading workspace…</div>}>{children}</Suspense></main>
       </div>
     </div>
