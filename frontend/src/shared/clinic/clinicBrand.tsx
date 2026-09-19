@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { createContext, useContext, useCallback, useMemo } from 'react'
 import type { ReactNode } from 'react'
 
 import { apiRequest } from '../api/apiClient'
@@ -49,27 +50,16 @@ async function fetchBrand() {
 }
 
 export function ClinicBrandProvider({ children }: { children: ReactNode }) {
-  const [brand, setBrand] = useState<ClinicBrand>(defaultClinicBrand)
-  const [isLoading, setIsLoading] = useState(true)
-
-  async function refreshBrand() {
-    try {
-      const nextBrand = await fetchBrand()
-      setBrand(nextBrand)
-    } catch {
-      setBrand((current) => normalizeBrand(current))
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  function applyBrand(nextBrand: Partial<ClinicBrand>) {
-    setBrand((current) => normalizeBrand({ ...current, ...nextBrand }))
-  }
-
-  useEffect(() => {
-    void refreshBrand()
-  }, [])
+  const client = useQueryClient()
+  const query = useQuery({ queryKey: ['settings', 'brand'], queryFn: fetchBrand })
+  const brand = query.data ?? defaultClinicBrand
+  const isLoading = query.isPending
+  const refreshBrand = useCallback(async () => {
+    await client.invalidateQueries({ queryKey: ['settings', 'brand'] })
+  }, [client])
+  const applyBrand = useCallback((nextBrand: Partial<ClinicBrand>) => {
+    client.setQueryData<ClinicBrand>(['settings', 'brand'], current => normalizeBrand({ ...current, ...nextBrand }))
+  }, [client])
 
   const value = useMemo(
     () => ({
@@ -78,7 +68,7 @@ export function ClinicBrandProvider({ children }: { children: ReactNode }) {
       applyBrand,
       refreshBrand,
     }),
-    [brand, isLoading],
+    [brand, isLoading, applyBrand, refreshBrand],
   )
 
   return <ClinicBrandContext.Provider value={value}>{children}</ClinicBrandContext.Provider>

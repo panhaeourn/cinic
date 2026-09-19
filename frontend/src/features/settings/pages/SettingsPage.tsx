@@ -1,3 +1,4 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import {
   Bell,
@@ -42,33 +43,24 @@ function toPayload(settings: ClinicSettings): ClinicSettingsPayload {
 export function SettingsPage() {
   const { applyBrand } = useClinicBrand()
   const [form, setForm] = useState<ClinicSettingsPayload>(emptySettings)
-  const [updatedAt, setUpdatedAt] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [mutationError, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   const logoPreview = useMemo(() => form.logoUrl.trim(), [form.logoUrl])
 
-  async function loadSettings() {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const settings = await settingsApi.get()
-      setForm(toPayload(settings))
-      setUpdatedAt(settings.updatedAt)
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to load settings.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
+  const client = useQueryClient()
+  const [dirty, setDirty] = useState(false)
+  const settingsQuery = useQuery({ queryKey: ['settings', 'full'], queryFn: settingsApi.get })
+  const isLoading = settingsQuery.isPending
+  const updatedAt = settingsQuery.data?.updatedAt
+  const error = mutationError ?? settingsQuery.error?.message
   useEffect(() => {
-    void loadSettings()
-  }, [])
+    if (settingsQuery.data && !dirty) setForm(toPayload(settingsQuery.data))
+  }, [settingsQuery.data, dirty])
 
   function updateField<K extends keyof ClinicSettingsPayload>(key: K, value: ClinicSettingsPayload[K]) {
+    setDirty(true)
     setForm((current) => ({ ...current, [key]: value }))
   }
 
@@ -79,7 +71,8 @@ export function SettingsPage() {
     try {
       const saved = await settingsApi.update(form)
       setForm(toPayload(saved))
-      setUpdatedAt(saved.updatedAt)
+      client.setQueryData(['settings', 'full'], saved)
+      setDirty(false)
       applyBrand({
         clinicName: saved.clinicName,
         logoUrl: saved.logoUrl,

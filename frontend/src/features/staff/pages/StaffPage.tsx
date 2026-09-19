@@ -1,3 +1,4 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -5,7 +6,7 @@ import { BadgeCheck, Building2, KeyRound, MailCheck, Search, ShieldCheck, Trash2
 
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { staffApi } from '../services/staffApi'
-import type { Department, Gender, Staff, StaffClaim, StaffPayload, StaffStatus, StaffType } from '../types/staff'
+import type { Gender, Staff, StaffClaim, StaffPayload, StaffStatus, StaffType } from '../types/staff'
 
 const staffTypes: Array<{ value: StaffType; label: string; role: string; prefix: string }> = [
   { value: 'ADMIN', label: 'Admin', role: 'ADMIN', prefix: 'ADM' },
@@ -68,71 +69,34 @@ function claimStatusText(claim: StaffClaim | null) {
 
 export function StaffPage() {
   const [form, setForm] = useState<StaffPayload>(emptyForm)
-  const [staff, setStaff] = useState<Staff[]>([])
-  const [departments, setDepartments] = useState<Department[]>([])
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search.trim())
-  const [totalElements, setTotalElements] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [mutationError, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  const [claim, setClaim] = useState<StaffClaim | null>(null)
   const [isGeneratingClaim, setIsGeneratingClaim] = useState(false)
-  const [isLoadingClaim, setIsLoadingClaim] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
   const isEditing = Boolean(selectedStaff)
   const selectedPrefix = prefixForStaffType(form.staffType)
 
-  useEffect(() => {
-    let ignore = false
-    staffApi
-      .departments()
-      .then((items) => {
-        if (!ignore) {
-          setDepartments(items)
-        }
-      })
-      .catch((caught: Error) => {
-        if (!ignore) {
-          setError(caught.message)
-        }
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [])
+  const client = useQueryClient()
+  const staffQuery = useQuery({ queryKey: ['staff', 'list', debouncedSearch], queryFn: () => staffApi.list(debouncedSearch) })
+  const departmentQuery = useQuery({ queryKey: ['departments', 'options'], queryFn: staffApi.departments })
+  const claimQuery = useQuery({ queryKey: ['staff', 'claim', selectedStaff?.id], queryFn: async () => (await staffApi.latestClaim(selectedStaff!.id)) ?? null, enabled: Boolean(selectedStaff) })
+  const claim = claimQuery.data ?? null
+  const isLoadingClaim = claimQuery.isPending && Boolean(selectedStaff)
+  const staff = staffQuery.data?.content ?? []
+  const departments = departmentQuery.data ?? []
+  const totalElements = staffQuery.data?.totalElements ?? 0
+  const isLoading = staffQuery.isPending
+  const error = mutationError ?? staffQuery.error?.message ?? departmentQuery.error?.message ?? claimQuery.error?.message
 
   useEffect(() => {
-    let ignore = false
-    setIsLoading(true)
-    setError(null)
-    staffApi
-      .list(debouncedSearch)
-      .then((page) => {
-        if (!ignore) {
-          setStaff(page.content)
-          setTotalElements(page.totalElements)
-        }
-      })
-      .catch((caught: Error) => {
-        if (!ignore) {
-          setError(caught.message)
-        }
-      })
-      .finally(() => {
-        if (!ignore) {
-          setIsLoading(false)
-        }
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [debouncedSearch])
+    const latest = staffQuery.data?.content.find(member => member.id === selectedStaff?.id)
+    if (latest) setSelectedStaff(latest)
+  }, [staffQuery.data, selectedStaff?.id])
 
   function updateField(field: keyof StaffPayload, value: string) {
     setForm((current) => {
@@ -147,7 +111,6 @@ export function StaffPage() {
   function startNewStaff() {
     setSelectedStaff(null)
     setForm(emptyForm)
-    setClaim(null)
     setError(null)
     setNotice(null)
   }
@@ -155,28 +118,12 @@ export function StaffPage() {
   function selectStaff(staffMember: Staff) {
     setSelectedStaff(staffMember)
     setForm(toStaffForm(staffMember))
-    setClaim(null)
     setError(null)
     setNotice(null)
-    void loadLatestClaim(staffMember.id)
-  }
-
-  async function loadLatestClaim(staffId: string) {
-    setIsLoadingClaim(true)
-    try {
-      const latestClaim = await staffApi.latestClaim(staffId)
-      setClaim(latestClaim ?? null)
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to load staff claim status.')
-    } finally {
-      setIsLoadingClaim(false)
-    }
   }
 
   async function refreshStaff(nextSelected?: Staff) {
-    const page = await staffApi.list(debouncedSearch)
-    setStaff(page.content)
-    setTotalElements(page.totalElements)
+    await client.invalidateQueries({ queryKey: ['staff'] })
     if (nextSelected) {
       setSelectedStaff(nextSelected)
     }
@@ -222,7 +169,7 @@ export function StaffPage() {
     setIsGeneratingClaim(true)
     try {
       const generatedClaim = await staffApi.generateClaim(selectedStaff.id)
-      setClaim(generatedClaim)
+      client.setQueryData(['staff', 'claim', selectedStaff.id], generatedClaim)
       setNotice(`Claim code generated for ${generatedClaim.targetEmail}.`)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to generate staff claim code.')
@@ -249,8 +196,7 @@ export function StaffPage() {
       setNotice(`Staff profile ${selectedStaff.staffCode} was deleted.`)
       setSelectedStaff(null)
       setForm(emptyForm)
-      setClaim(null)
-      await refreshStaff()
+        await refreshStaff()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to delete staff profile.')
     } finally {

@@ -1,18 +1,16 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { HeartPulse, Ruler, Search, Stethoscope, Thermometer, UserRoundCheck } from 'lucide-react'
 
 import { useAuth } from '../../auth/components/AuthContext'
 import { patientApi } from '../../patients/services/patientApi'
-import type { Patient } from '../../patients/types/patient'
 import { queueApi } from '../../queue/services/queueApi'
-import type { QueueTicket } from '../../queue/types/queue'
 import { staffApi } from '../../staff/services/staffApi'
-import type { Staff } from '../../staff/types/staff'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { vitalsApi } from '../services/vitalsApi'
-import type { Vitals, VitalsPayload } from '../types/vitals'
+import type { VitalsPayload } from '../types/vitals'
 
 type VitalsForm = Record<keyof VitalsPayload, string>
 
@@ -49,51 +47,32 @@ function toPayload(form: VitalsForm): VitalsPayload {
 
 export function VitalsPage() {
   const { user } = useAuth()
-  const [vitals, setVitals] = useState<Vitals[]>([])
-  const [patients, setPatients] = useState<Patient[]>([])
-  const [queue, setQueue] = useState<QueueTicket[]>([])
-  const [staff, setStaff] = useState<Staff[]>([])
   const [form, setForm] = useState<VitalsForm>(emptyForm)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search.trim())
-  const [error, setError] = useState<string | null>(null)
+  const [mutationError, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+
+  const client = useQueryClient()
+  const records = useQuery({ queryKey: ['vitals', 'list', debouncedSearch], queryFn: () => vitalsApi.list(debouncedSearch) })
+  const patientOptions = useQuery({ queryKey: ['patients', 'options'], queryFn: () => patientApi.list('') })
+  const queueDate = new Date().toISOString().slice(0, 10)
+  const queueOptions = useQuery({ queryKey: ['queue', 'options', queueDate], queryFn: () => queueApi.list({ date: queueDate }) })
+  const staffOptions = useQuery({ queryKey: ['staff', 'options'], queryFn: () => staffApi.list('') })
+  const vitals = useMemo(() => records.data?.content ?? [], [records.data])
+  const patients = patientOptions.data?.content ?? []
+  const queue = queueOptions.data?.content ?? []
+  const staff = useMemo(() => staffOptions.data?.content ?? [], [staffOptions.data])
+  const isLoading = records.isPending
+  const error = mutationError ?? records.error?.message ?? patientOptions.error?.message ?? queueOptions.error?.message ?? staffOptions.error?.message
 
   const canCreate = useMemo(() => user?.permissions.includes('VITALS_CREATE') ?? false, [user])
   const nurses = useMemo(() => staff.filter((member) => member.staffType === 'NURSE' && member.status === 'ACTIVE'), [staff])
 
   async function loadVitals() {
-    const page = await vitalsApi.list(debouncedSearch)
-    setVitals(page.content)
+    await client.invalidateQueries({ queryKey: ['vitals'] })
   }
-
-  useEffect(() => {
-    let ignore = false
-    setIsLoading(true)
-    setError(null)
-
-    Promise.all([vitalsApi.list(debouncedSearch), patientApi.list(''), queueApi.list({ date: new Date().toISOString().slice(0, 10) }), staffApi.list('')])
-      .then(([vitalsPage, patientPage, queuePage, staffPage]) => {
-        if (!ignore) {
-          setVitals(vitalsPage.content)
-          setPatients(patientPage.content)
-          setQueue(queuePage.content)
-          setStaff(staffPage.content)
-        }
-      })
-      .catch((caught: Error) => {
-        if (!ignore) setError(caught.message)
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false)
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [debouncedSearch])
 
   function updateField(field: keyof VitalsForm, value: string) {
     setForm((current) => ({ ...current, [field]: value }))

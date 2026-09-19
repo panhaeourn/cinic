@@ -1,3 +1,4 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { toDataURL } from 'qrcode'
@@ -86,15 +87,11 @@ function toInvoiceItemPayload(item: InvoiceItemForm): InvoiceItemPayload {
 
 export function BillingPage() {
   const { brand } = useClinicBrand()
-  const [invoices, setInvoices] = useState<Invoice[]>([])
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
   const [invoiceSearch, setInvoiceSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | ''>('')
-  const [totalElements, setTotalElements] = useState(0)
-  const [patients, setPatients] = useState<Patient[]>([])
   const [patientSearch, setPatientSearch] = useState('')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
-  const [services, setServices] = useState<ServicePrice[]>([])
   const [serviceSearch, setServiceSearch] = useState('')
   const [items, setItems] = useState<InvoiceItemForm[]>([emptyItem])
   const [discountAmount, setDiscountAmount] = useState('')
@@ -106,14 +103,11 @@ export function BillingPage() {
   const [khqrRemainingSeconds, setKhqrRemainingSeconds] = useState(0)
   const [khqrPollMessage, setKhqrPollMessage] = useState('')
   const [khqrConfirmed, setKhqrConfirmed] = useState(false)
-  const [isLoadingInvoices, setIsLoadingInvoices] = useState(true)
-  const [isLoadingPatients, setIsLoadingPatients] = useState(false)
-  const [isLoadingServices, setIsLoadingServices] = useState(false)
   const [isSavingInvoice, setIsSavingInvoice] = useState(false)
   const [isSavingPayment, setIsSavingPayment] = useState(false)
   const [isGeneratingKhqr, setIsGeneratingKhqr] = useState(false)
   const [isCheckingKhqr, setIsCheckingKhqr] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [mutationError, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   const khqrPollRef = useRef<number | null>(null)
@@ -145,85 +139,22 @@ export function BillingPage() {
     khqrPollInFlightRef.current = false
   }, [])
 
+  const client = useQueryClient()
+  const invoiceQuery = useQuery({ queryKey: ['invoices', 'list', invoiceSearch, statusFilter], queryFn: () => billingApi.list(invoiceSearch, statusFilter) })
+  const patientQuery = useQuery({ queryKey: ['patients', 'billing-options', patientSearch], queryFn: () => patientApi.list(patientSearch) })
+  const serviceQuery = useQuery({ queryKey: ['billing-services', serviceSearch], queryFn: () => billingApi.listServices(serviceSearch, true) })
+  const invoiceDetail = useQuery({ queryKey: ['invoices', 'detail', selectedInvoice?.id], queryFn: () => billingApi.get(selectedInvoice!.id), enabled: Boolean(selectedInvoice) })
+  const invoices = invoiceQuery.data?.content ?? []
+  const patients = patientQuery.data?.content ?? []
+  const services = serviceQuery.data?.content ?? []
+  const totalElements = invoiceQuery.data?.totalElements ?? 0
+  const isLoadingInvoices = invoiceQuery.isPending
+  const isLoadingPatients = patientQuery.isPending
+  const isLoadingServices = serviceQuery.isPending
+  const error = mutationError ?? invoiceQuery.error?.message ?? patientQuery.error?.message ?? serviceQuery.error?.message ?? invoiceDetail.error?.message
   useEffect(() => {
-    let ignore = false
-    setIsLoadingInvoices(true)
-    setError(null)
-    billingApi
-      .list(invoiceSearch, statusFilter)
-      .then((page) => {
-        if (!ignore) {
-          setInvoices(page.content)
-          setTotalElements(page.totalElements)
-        }
-      })
-      .catch((caught: Error) => {
-        if (!ignore) {
-          setError(caught.message)
-        }
-      })
-      .finally(() => {
-        if (!ignore) {
-          setIsLoadingInvoices(false)
-        }
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [invoiceSearch, statusFilter])
-
-  useEffect(() => {
-    let ignore = false
-    setIsLoadingPatients(true)
-    patientApi
-      .list(patientSearch)
-      .then((page) => {
-        if (!ignore) {
-          setPatients(page.content)
-        }
-      })
-      .catch((caught: Error) => {
-        if (!ignore) {
-          setError(caught.message)
-        }
-      })
-      .finally(() => {
-        if (!ignore) {
-          setIsLoadingPatients(false)
-        }
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [patientSearch])
-
-  useEffect(() => {
-    let ignore = false
-    setIsLoadingServices(true)
-    billingApi
-      .listServices(serviceSearch, true)
-      .then((page) => {
-        if (!ignore) {
-          setServices(page.content)
-        }
-      })
-      .catch((caught: Error) => {
-        if (!ignore) {
-          setError(caught.message)
-        }
-      })
-      .finally(() => {
-        if (!ignore) {
-          setIsLoadingServices(false)
-        }
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [serviceSearch])
+    if (invoiceDetail.data?.id === selectedInvoice?.id && invoiceDetail.data) setSelectedInvoice(invoiceDetail.data)
+  }, [invoiceDetail.data, selectedInvoice?.id])
 
   useEffect(() => {
     clearKhqrTimers()
@@ -335,10 +266,9 @@ export function BillingPage() {
   }, [clearKhqrTimers, khqr, khqrConfirmed, selectedInvoice])
 
   async function refreshInvoices(nextSelected?: Invoice) {
-    const page = await billingApi.list(invoiceSearch, statusFilter)
-    setInvoices(page.content)
-    setTotalElements(page.totalElements)
+    await client.invalidateQueries({ queryKey: ['invoices'] })
     if (nextSelected) {
+      client.setQueryData(['invoices', 'detail', nextSelected.id], nextSelected)
       setSelectedInvoice(nextSelected)
       setPayment((current) => ({ ...current, amount: nextSelected.balanceAmount > 0 ? String(nextSelected.balanceAmount) : '' }))
     }

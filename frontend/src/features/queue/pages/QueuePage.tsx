@@ -41,7 +41,6 @@ export function QueuePage() {
   const queue = useQuery({
     queryKey: ['queue', { search: debouncedSearch, status, date }],
     queryFn: ({ signal }) => queueApi.list({ search: debouncedSearch, status, date }, signal),
-    staleTime: 0,
   })
   const patientOptions = useQuery({
     queryKey: ['patients', 'queue-options'],

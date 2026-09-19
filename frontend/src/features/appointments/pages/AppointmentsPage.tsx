@@ -1,13 +1,12 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { CalendarClock, CalendarPlus, CheckCircle2, Clock3, Search, UserCheck, XCircle } from 'lucide-react'
 
 import { useAuth } from '../../auth/components/AuthContext'
 import { patientApi } from '../../patients/services/patientApi'
-import type { Patient } from '../../patients/types/patient'
 import { staffApi } from '../../staff/services/staffApi'
-import type { Staff } from '../../staff/types/staff'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { appointmentApi } from '../services/appointmentApi'
 import type { Appointment, AppointmentPayload, AppointmentStatus } from '../types/appointment'
@@ -46,14 +45,11 @@ function statusTone(status: AppointmentStatus) {
 
 export function AppointmentsPage() {
   const { user } = useAuth()
-  const [appointments, setAppointments] = useState<Appointment[]>([])
-  const [patients, setPatients] = useState<Patient[]>([])
-  const [staff, setStaff] = useState<Staff[]>([])
+  const queryClient = useQueryClient()
   const [form, setForm] = useState<AppointmentPayload>(() => emptyForm())
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search.trim())
   const [status, setStatus] = useState<AppointmentStatus | ''>('')
-  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -61,41 +57,35 @@ export function AppointmentsPage() {
   const canCreate = useMemo(() => user?.permissions.includes('APPOINTMENT_CREATE') ?? false, [user])
   const canUpdate = useMemo(() => user?.permissions.includes('APPOINTMENT_UPDATE') ?? false, [user])
   const canCancel = useMemo(() => user?.permissions.includes('APPOINTMENT_CANCEL') ?? false, [user])
-  const doctors = useMemo(() => staff.filter((member) => member.staffType === 'DOCTOR' && member.status === 'ACTIVE'), [staff])
+  const appointmentList = useQuery({
+    queryKey: ['appointments', 'list', { search: debouncedSearch, status }],
+    queryFn: ({ signal }) => appointmentApi.list({ search: debouncedSearch, status }, signal),
+  })
+  // Reference options stay cached; live events invalidate them independently.
+  const patientOptions = useQuery({
+    queryKey: ['patients', 'appointment-options'],
+    queryFn: ({ signal }) => patientApi.list('', signal),
+    enabled: canCreate,
+  })
+  const staffOptions = useQuery({
+    queryKey: ['staff', 'appointment-options'],
+    queryFn: ({ signal }) => staffApi.list('', signal),
+    enabled: canCreate,
+  })
+  const appointments = useMemo(() => appointmentList.data?.content ?? [], [appointmentList.data])
+  const patients = patientOptions.data?.content ?? []
+  const doctors = useMemo(() => staffOptions.data?.content.filter((member) => member.staffType === 'DOCTOR' && member.status === 'ACTIVE') ?? [], [staffOptions.data])
+  const isLoading = appointmentList.isPending
+  const optionsLoading = patientOptions.isPending || staffOptions.isPending
+  const loadError = appointmentList.error ?? patientOptions.error ?? staffOptions.error
   const todayCount = useMemo(() => {
     const today = new Date().toDateString()
     return appointments.filter((appointment) => new Date(appointment.scheduledAt).toDateString() === today).length
   }, [appointments])
 
   async function loadAppointments() {
-    const page = await appointmentApi.list({ search: debouncedSearch, status })
-    setAppointments(page.content)
+    await queryClient.invalidateQueries({ queryKey: ['appointments'] })
   }
-
-  useEffect(() => {
-    let ignore = false
-    setIsLoading(true)
-    setError(null)
-
-    Promise.all([appointmentApi.list({ search: debouncedSearch, status }), patientApi.list(''), staffApi.list('')])
-      .then(([appointmentPage, patientPage, staffPage]) => {
-        if (!ignore) {
-          setAppointments(appointmentPage.content)
-          setPatients(patientPage.content)
-          setStaff(staffPage.content)
-        }
-      })
-      .catch((caught: Error) => {
-        if (!ignore) setError(caught.message)
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false)
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [debouncedSearch, status])
 
   function updateField(field: keyof AppointmentPayload, value: string | number) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -177,7 +167,7 @@ export function AppointmentsPage() {
         </article>
       </div>
 
-      {error ? <div className="form-alert">{error}</div> : null}
+      {error || loadError ? <div className="form-alert">{error ?? loadError?.message}</div> : null}
       {notice ? <div className="success-alert">{notice}</div> : null}
 
       <div className="patient-workspace">
@@ -202,7 +192,7 @@ export function AppointmentsPage() {
             </select>
           </div>
 
-          <div className="workflow-list">
+          <div className="workflow-list" aria-busy={appointmentList.isFetching || search.trim() !== debouncedSearch}>
             {isLoading ? (
               <div className="patient-empty">Loading appointments...</div>
             ) : appointments.length === 0 ? (
@@ -287,8 +277,8 @@ export function AppointmentsPage() {
                 <span>Notes</span>
                 <textarea value={form.notes ?? ''} onChange={(event) => updateField('notes', event.target.value)} />
               </label>
-              <button className="primary-action full-span" disabled={isSaving} type="submit">
-                {isSaving ? 'Creating appointment...' : 'Create appointment'}
+              <button className="primary-action full-span" disabled={isSaving || optionsLoading || Boolean(patientOptions.error || staffOptions.error)} type="submit">
+                {isSaving ? 'Creating appointment...' : optionsLoading ? 'Loading booking options...' : 'Create appointment'}
               </button>
             </form>
           ) : (

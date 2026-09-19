@@ -8,12 +8,12 @@ function cleanPayload(payload: PatientPayload) {
 }
 
 export const patientApi = {
-  list(search: string) {
+  list(search: string, signal?: AbortSignal) {
     const query = new URLSearchParams({ size: '20', sort: 'createdAt,desc' })
     if (search.trim()) {
       query.set('search', search.trim())
     }
-    return apiRequest<PageResponse<Patient>>(`/patients?${query.toString()}`)
+    return apiRequest<PageResponse<Patient>>(`/patients?${query.toString()}`, { signal })
   },
   listCursor(search: string, cursor: string | null, signal?: AbortSignal) {
     const query = new URLSearchParams({ size: '50' })

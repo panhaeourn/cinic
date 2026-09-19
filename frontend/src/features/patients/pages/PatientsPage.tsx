@@ -98,6 +98,7 @@ export function PatientsPage() {
     queryFn: () => patientApi.get(selectedPatientId!),
     enabled: Boolean(selectedPatientId),
   })
+  const [formDirty, setFormDirty] = useState(false)
   const selectedPatient = patientDetail.data ?? null
   const queryError = patientList.error ?? patientDetail.error
   const listRef = useRef<HTMLDivElement>(null)
@@ -128,20 +129,22 @@ export function PatientsPage() {
   }, [patientList, patients.length, virtualRows, isShowingPreviousResults])
 
   useEffect(() => {
-    if (selectedPatient) {
+    if (selectedPatient && !formDirty) {
       setForm(toPatientForm(selectedPatient))
     }
-  }, [selectedPatient])
+  }, [selectedPatient, formDirty])
 
   const canCreate = useMemo(() => user?.permissions.includes('PATIENT_CREATE') ?? false, [user])
   const isEditing = Boolean(selectedPatientId && canCreate)
   const selectedAge = selectedPatient ? getAge(selectedPatient.dateOfBirth) : null
 
   function updateField(field: keyof PatientPayload, value: string) {
+    setFormDirty(true)
     setForm((current) => ({ ...current, [field]: value }))
   }
 
   function startNewPatient() {
+    setFormDirty(false)
     setSelectedPatientId(null)
     setForm(emptyForm)
     setError(null)
@@ -149,6 +152,7 @@ export function PatientsPage() {
   }
 
   function selectPatient(patient: PatientListItem) {
+    setFormDirty(false)
     setSelectedPatientId(patient.id)
     setError(null)
     setNotice(null)

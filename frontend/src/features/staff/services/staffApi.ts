@@ -8,12 +8,12 @@ function cleanPayload(payload: StaffPayload) {
 }
 
 export const staffApi = {
-  list(search: string) {
+  list(search: string, signal?: AbortSignal) {
     const query = new URLSearchParams({ size: '20', sort: 'createdAt,desc' })
     if (search.trim()) {
       query.set('search', search.trim())
     }
-    return apiRequest<PageResponse<Staff>>(`/staff?${query.toString()}`)
+    return apiRequest<PageResponse<Staff>>(`/staff?${query.toString()}`, { signal })
   },
   create(payload: StaffPayload) {
     return apiRequest<Staff>('/staff', {

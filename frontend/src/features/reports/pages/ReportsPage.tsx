@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo, useState } from 'react'
 import {
   Activity,
   Banknote,
@@ -15,7 +16,6 @@ import { useClinicBrand } from '../../../shared/clinic/clinicBrand'
 import { formatCurrencyAmount } from '../../../shared/clinic/currency'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { reportsApi } from '../services/reportsApi'
-import type { ReportSummary } from '../types/reports'
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10)
@@ -52,9 +52,11 @@ export function ReportsPage() {
   const { brand } = useClinicBrand()
   const [from, setFrom] = useState(firstDayInput())
   const [to, setTo] = useState(todayInput())
-  const [summary, setSummary] = useState<ReportSummary | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const client = useQueryClient()
+  const report = useQuery({ queryKey: ['reports', from, to], queryFn: () => reportsApi.summary(from, to) })
+  const summary = report.data ?? null
+  const isLoading = report.isPending
+  const error = report.error?.message
   const money = useMemo(() => (value: number) => formatCurrencyAmount(value, brand.currency), [brand.currency])
 
   function setPeriod(period: 'today' | 'week' | 'month' | 'year') {
@@ -71,22 +73,7 @@ export function ReportsPage() {
     }
   }
 
-  async function loadSummary() {
-    setIsLoading(true)
-    setError(null)
-    try {
-      setSummary(await reportsApi.summary(from, to))
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to load reports.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    void loadSummary()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [from, to])
+  async function loadSummary() { await client.invalidateQueries({ queryKey: ['reports'] }) }
 
   const largestDailyNet = useMemo(
     () => Math.max(1, ...(summary?.revenue.dailyRevenue.map((day) => day.netAmount) ?? [0])),

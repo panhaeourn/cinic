@@ -1,49 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { FileClock, Filter, Search } from 'lucide-react'
 
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { auditLogApi } from '../services/accessControlApi'
-import type { AuditLog } from '../types/access'
 
 function toIsoDateTime(value: string) {
   return value ? new Date(value).toISOString() : undefined
 }
 
 export function AuditLogsPage() {
-  const [logs, setLogs] = useState<AuditLog[]>([])
   const [filters, setFilters] = useState({ user: '', module: '', action: '', from: '', to: '' })
-  const [totalElements, setTotalElements] = useState(0)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    let ignore = false
-    setIsLoading(true)
-    setError(null)
-    auditLogApi.list({
-      user: filters.user,
-      module: filters.module,
-      action: filters.action,
-      from: toIsoDateTime(filters.from),
-      to: toIsoDateTime(filters.to),
-    }).then((page) => {
-      if (!ignore) {
-        setLogs(page.content)
-        setTotalElements(page.totalElements)
-      }
-    }).catch((caught: Error) => {
-      if (!ignore) {
-        setError(caught.message)
-      }
-    }).finally(() => {
-      if (!ignore) {
-        setIsLoading(false)
-      }
-    })
-    return () => {
-      ignore = true
-    }
-  }, [filters])
+  const query = useQuery({ queryKey: ['audit-logs', filters], queryFn: () => auditLogApi.list({
+    ...filters, from: toIsoDateTime(filters.from), to: toIsoDateTime(filters.to),
+  }) })
+  const logs = query.data?.content ?? []
+  const totalElements = query.data?.totalElements ?? 0
+  const isLoading = query.isPending
+  const error = query.error?.message
 
   return (
     <section className="audit-page">

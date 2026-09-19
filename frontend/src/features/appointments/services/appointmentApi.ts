@@ -17,13 +17,13 @@ function cleanPayload<T extends Record<string, unknown>>(payload: T) {
 }
 
 export const appointmentApi = {
-  list(filters: AppointmentFilters = {}) {
+  list(filters: AppointmentFilters = {}, signal?: AbortSignal) {
     const query = new URLSearchParams({ size: '40', sort: 'scheduledAt,asc' })
     if (filters.search?.trim()) query.set('search', filters.search.trim())
     if (filters.status) query.set('status', filters.status)
     if (filters.from) query.set('from', filters.from)
     if (filters.to) query.set('to', filters.to)
-    return apiRequest<PageResponse<Appointment>>(`/appointments?${query.toString()}`)
+    return apiRequest<PageResponse<Appointment>>(`/appointments?${query.toString()}`, { signal })
   },
   create(payload: AppointmentPayload) {
     return apiRequest<Appointment>('/appointments', {

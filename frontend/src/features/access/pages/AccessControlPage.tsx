@@ -1,64 +1,31 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
 import { useEffect, useMemo, useState } from 'react'
 import { KeyRound, Lock, Search, ShieldCheck, UserCog, UsersRound } from 'lucide-react'
 
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { accessControlApi } from '../services/accessControlApi'
-import type { Role, UserAccess } from '../types/access'
+import type { UserAccess } from '../types/access'
 
 export function AccessControlPage() {
-  const [users, setUsers] = useState<UserAccess[]>([])
-  const [roles, setRoles] = useState<Role[]>([])
   const [selectedUser, setSelectedUser] = useState<UserAccess | null>(null)
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search.trim())
   const [temporaryPassword, setTemporaryPassword] = useState('')
-  const [totalElements, setTotalElements] = useState(0)
-  const [error, setError] = useState<string | null>(null)
+  const [mutationError, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
+  const client = useQueryClient()
+  const usersQuery = useQuery({ queryKey: ['access-control', 'users', debouncedSearch], queryFn: () => accessControlApi.users(debouncedSearch) })
+  const rolesQuery = useQuery({ queryKey: ['access-control', 'roles'], queryFn: accessControlApi.roles })
+  const users = useMemo(() => usersQuery.data?.content ?? [], [usersQuery.data])
+  const roles = useMemo(() => rolesQuery.data ?? [], [rolesQuery.data])
+  const totalElements = usersQuery.data?.totalElements ?? 0
+  const isLoading = usersQuery.isPending
+  const error = mutationError ?? usersQuery.error?.message ?? rolesQuery.error?.message
   const roleNames = useMemo(() => roles.map((role) => role.name), [roles])
-
-  useEffect(() => {
-    let ignore = false
-    accessControlApi.roles().then((items) => {
-      if (!ignore) {
-        setRoles(items)
-      }
-    }).catch((caught: Error) => {
-      if (!ignore) {
-        setError(caught.message)
-      }
-    })
-    return () => {
-      ignore = true
-    }
-  }, [])
-
-  useEffect(() => {
-    let ignore = false
-    setIsLoading(true)
-    accessControlApi.users(debouncedSearch).then((page) => {
-      if (!ignore) {
-        setUsers(page.content)
-        setTotalElements(page.totalElements)
-      }
-    }).catch((caught: Error) => {
-      if (!ignore) {
-        setError(caught.message)
-      }
-    }).finally(() => {
-      if (!ignore) {
-        setIsLoading(false)
-      }
-    })
-    return () => {
-      ignore = true
-    }
-  }, [debouncedSearch])
 
   useEffect(() => {
     if (isLoading || users.length === 0) {
@@ -71,6 +38,11 @@ export function AccessControlPage() {
       setTemporaryPassword('')
     }
   }, [isLoading, selectedUser, users])
+
+  useEffect(() => {
+    const latest = usersQuery.data?.content.find(user => user.id === selectedUser?.id)
+    if (latest) setSelectedUser(latest)
+  }, [usersQuery.data, selectedUser?.id])
 
   function selectUser(user: UserAccess) {
     setSelectedUser(user)
@@ -87,9 +59,7 @@ export function AccessControlPage() {
   async function refreshUser(user: UserAccess) {
     setSelectedUser(user)
     setSelectedRoles(user.roles)
-    const page = await accessControlApi.users(debouncedSearch)
-    setUsers(page.content)
-    setTotalElements(page.totalElements)
+    await client.invalidateQueries({ queryKey: ['access-control'] })
   }
 
   async function saveRoles() {

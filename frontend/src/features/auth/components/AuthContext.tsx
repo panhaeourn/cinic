@@ -1,3 +1,4 @@
+import { useClinicEvents } from '../../../shared/realtime/useClinicEvents'
 import { createContext, useCallback, useContext, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -29,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		staleTime: 5 * 60_000,
 	})
 	const user = session.data ?? null
+	useClinicEvents(user?.id)
 
   const persistSession = useCallback((response: AuthResponse) => {
 		queryClient.setQueryData(sessionQueryKey, response.user)

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo, useState } from 'react'
 import {
   Banknote,
   Download,
@@ -15,7 +16,7 @@ import { formatCurrencyAmount } from '../../../shared/clinic/currency'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { billingApi } from '../services/billingApi'
 import { downloadReceipt, printReceipt } from '../services/receiptTools'
-import type { Payment, PaymentMethod, PaymentSummary } from '../types/billing'
+import type { Payment, PaymentMethod } from '../types/billing'
 
 function shortDate(value: string) {
   return new Intl.DateTimeFormat('en-US', {
@@ -37,46 +38,24 @@ function methodLabel(method: PaymentMethod) {
 
 export function PaymentsPage() {
   const { brand } = useClinicBrand()
-  const [payments, setPayments] = useState<Payment[]>([])
   const [search, setSearch] = useState('')
   const [method, setMethod] = useState<PaymentMethod | ''>('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
-  const [totalElements, setTotalElements] = useState(0)
-  const [summary, setSummary] = useState<PaymentSummary>({
-    grossAmount: 0,
-    refundedAmount: 0,
-    netAmount: 0,
-    paymentCount: 0,
-  })
-  const [isLoading, setIsLoading] = useState(true)
   const [busyPaymentId, setBusyPaymentId] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [mutationError, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const money = useMemo(() => (value: number) => formatCurrencyAmount(value, brand.currency), [brand.currency])
 
-  async function loadPayments() {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const [page, nextSummary] = await Promise.all([
-        billingApi.listPayments(search, method, from, to),
-        billingApi.paymentSummary(search, method, from, to),
-      ])
-      setPayments(page.content)
-      setTotalElements(page.totalElements)
-      setSummary(nextSummary)
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to load payments.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    void loadPayments()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, method, from, to])
+  const client = useQueryClient()
+  const paymentQuery = useQuery({ queryKey: ['payments', 'list', search, method, from, to], queryFn: () => billingApi.listPayments(search, method, from, to) })
+  const summaryQuery = useQuery({ queryKey: ['payments', 'summary', search, method, from, to], queryFn: () => billingApi.paymentSummary(search, method, from, to) })
+  const payments = paymentQuery.data?.content ?? []
+  const totalElements = paymentQuery.data?.totalElements ?? 0
+  const summary = summaryQuery.data ?? { grossAmount: 0, refundedAmount: 0, netAmount: 0, paymentCount: 0 }
+  const isLoading = paymentQuery.isPending
+  const error = mutationError ?? paymentQuery.error?.message ?? summaryQuery.error?.message
+  async function loadPayments() { await client.invalidateQueries({ queryKey: ['payments'] }) }
 
   async function handleReceipt(payment: Payment, action: 'print' | 'download') {
     setBusyPaymentId(payment.id)

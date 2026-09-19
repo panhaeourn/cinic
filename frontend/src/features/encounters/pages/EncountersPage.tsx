@@ -1,15 +1,13 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { CheckCircle2, FileClock, Search, Stethoscope, UserRound, ClipboardPlus } from 'lucide-react'
 
 import { useAuth } from '../../auth/components/AuthContext'
 import { patientApi } from '../../patients/services/patientApi'
-import type { Patient } from '../../patients/types/patient'
 import { queueApi } from '../../queue/services/queueApi'
-import type { QueueTicket } from '../../queue/types/queue'
 import { staffApi } from '../../staff/services/staffApi'
-import type { Staff } from '../../staff/types/staff'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { encounterApi } from '../services/encounterApi'
 import type { Encounter, EncounterPayload, EncounterStatus } from '../types/encounter'
@@ -34,18 +32,26 @@ function statusTone(status: EncounterStatus) {
 
 export function EncountersPage() {
   const { user } = useAuth()
-  const [encounters, setEncounters] = useState<Encounter[]>([])
-  const [patients, setPatients] = useState<Patient[]>([])
-  const [queue, setQueue] = useState<QueueTicket[]>([])
-  const [staff, setStaff] = useState<Staff[]>([])
   const [form, setForm] = useState<EncounterPayload>(emptyForm)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search.trim())
   const [status, setStatus] = useState<EncounterStatus | ''>('')
-  const [error, setError] = useState<string | null>(null)
+  const [mutationError, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+
+  const client = useQueryClient()
+  const records = useQuery({ queryKey: ['encounters', 'list', debouncedSearch, status], queryFn: () => encounterApi.list({ search: debouncedSearch, status }) })
+  const patientOptions = useQuery({ queryKey: ['patients', 'options'], queryFn: () => patientApi.list('') })
+  const queueDate = new Date().toISOString().slice(0, 10)
+  const queueOptions = useQuery({ queryKey: ['queue', 'options', queueDate], queryFn: () => queueApi.list({ date: queueDate }) })
+  const staffOptions = useQuery({ queryKey: ['staff', 'options'], queryFn: () => staffApi.list('') })
+  const encounters = useMemo(() => records.data?.content ?? [], [records.data])
+  const patients = patientOptions.data?.content ?? []
+  const queue = queueOptions.data?.content ?? []
+  const staff = useMemo(() => staffOptions.data?.content ?? [], [staffOptions.data])
+  const isLoading = records.isPending
+  const error = mutationError ?? records.error?.message ?? patientOptions.error?.message ?? queueOptions.error?.message ?? staffOptions.error?.message
 
   const canCreate = useMemo(() => user?.permissions.includes('ENCOUNTER_CREATE') ?? false, [user])
   const canComplete = useMemo(() => user?.permissions.includes('ENCOUNTER_COMPLETE') ?? false, [user])
@@ -53,40 +59,8 @@ export function EncountersPage() {
   const activeCount = useMemo(() => encounters.filter((encounter) => encounter.status === 'IN_PROGRESS').length, [encounters])
 
   async function loadEncounters() {
-    const page = await encounterApi.list({ search: debouncedSearch, status })
-    setEncounters(page.content)
+    await client.invalidateQueries({ queryKey: ['encounters'] })
   }
-
-  useEffect(() => {
-    let ignore = false
-    setIsLoading(true)
-    setError(null)
-
-    Promise.all([
-      encounterApi.list({ search: debouncedSearch, status }),
-      patientApi.list(''),
-      queueApi.list({ date: new Date().toISOString().slice(0, 10) }),
-      staffApi.list(''),
-    ])
-      .then(([encounterPage, patientPage, queuePage, staffPage]) => {
-        if (!ignore) {
-          setEncounters(encounterPage.content)
-          setPatients(patientPage.content)
-          setQueue(queuePage.content)
-          setStaff(staffPage.content)
-        }
-      })
-      .catch((caught: Error) => {
-        if (!ignore) setError(caught.message)
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false)
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [debouncedSearch, status])
 
   function updateField(field: keyof EncounterPayload, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
